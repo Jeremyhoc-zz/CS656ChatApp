@@ -27,14 +27,13 @@ public class dbConnection {
 
 	public boolean connectToDatabase(String username, String password) throws SQLException, ClassNotFoundException
 	{
-
 	      //STEP 2: Register JDBC driver
 	      Class.forName(JDBC_DRIVER);
 
 	      //STEP 3: Open a connection
 	      System.out.println("Connecting to database...");
 	      conn = DriverManager.getConnection(DB_URL,username,password);
-
+         System.out.println("Connected to database");
 	      return true;
 	}
 

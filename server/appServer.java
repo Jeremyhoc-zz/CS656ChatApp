@@ -15,10 +15,9 @@ import java.sql.SQLException;
 
 public class appServer {
 	public static void main(String[] args) { //throws ClassNotFoundException, SQLException {
-		System.out.println("Hello World");
 		try	{
 			ServerSocket myServerSocket = new ServerSocket(2597);
-			System.out.println("CS656ChatApp server established.");
+			System.out.println("CS656ChatApp server now online at port 2597.");
 			for (;;) {
 				Socket incoming = myServerSocket.accept();
 				//new ThreadClientHandler(incoming).start();
@@ -50,7 +49,7 @@ class ThreadClientHandler extends Thread {
 			dbConnection dbconn = new dbConnection();
 
 			//Login Process
-			rs = dbconn.executeSQL("select username, password from user;");
+			rs = dbconn.executeSQL("select username, password from Users;");
 			UserObject user = (UserObject)objectInputStream.readObject();
 			System.out.println("A client connected from " + incoming.getLocalAddress().getHostAddress());
 			boolean found = false;
