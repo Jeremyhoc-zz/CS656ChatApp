@@ -5,6 +5,9 @@
 # Files for the ART/Dalvik VM
 *.dex
 
+# Java class files
+*.class
+
 # Generated files
 bin/
 gen/
@@ -35,3 +38,8 @@ captures/
 
 # Keystore files
 *.jks
+
+# Miscellaneous
+/.idea/libraries
+.DS_Store
+.externalNativeBuild
