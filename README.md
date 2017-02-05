@@ -1,5 +1,7 @@
 # CS656ChatApp
+
 Chat Messenger with Text, Picture, and Voice.
 
-Client contains project for Android Studio client side app.
-Server contains code for hosting and database connectivity/API.
+Client contains Android Studio project and should be imported there.
+Server contains Eclipse project and should be imported there.
+SQL contains sql command-line code to drop-then-create database and populate
