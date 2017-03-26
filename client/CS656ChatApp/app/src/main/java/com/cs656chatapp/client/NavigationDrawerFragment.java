@@ -1,6 +1,5 @@
 package com.cs656chatapp.client;
-
-import com.cs656chatapp.common.*;
+import com.cs656chatapp.common.UserObject;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -12,6 +11,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,6 +31,8 @@ import android.widget.Toast;
  * implemented here.
  */
 public class NavigationDrawerFragment extends Fragment {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * Remember the position of the selected item.
@@ -62,6 +64,7 @@ public class NavigationDrawerFragment extends Fragment {
     private boolean mUserLearnedDrawer;
 
     public NavigationDrawerFragment() {
+
     }
 
     @Override
@@ -272,8 +275,20 @@ public class NavigationDrawerFragment extends Fragment {
         }
 
         if (item.getItemId() == R.id.action_example) {
-            Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT)
-                    .show();
+            try {
+                UserObject user = new UserObject();
+                user.setOperation("Set Message");
+                user = CommToServ.talkToServer(user);
+                if (user.getStatus() == 1) {
+                    String msg = user.getMessage();
+                    Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT)
+                            .show();
+                    user.setStatus(0);
+                }
+
+            } catch (Exception e) {
+                Log.d("Jet", e.getMessage());
+            }
             return true;
         }
 

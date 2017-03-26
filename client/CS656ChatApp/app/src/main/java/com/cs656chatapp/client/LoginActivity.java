@@ -1,23 +1,18 @@
 package com.cs656chatapp.client;
 
-import com.cs656chatapp.common.*;
+import com.cs656chatapp.common.UserObject;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-
 public class LoginActivity extends Activity {
-
-    private static final long serialVersionUID = 1L;
 
     Button nextPage;
     EditText Eusername, Epassword;
@@ -30,6 +25,8 @@ public class LoginActivity extends Activity {
         setContentView(R.layout.activity_user);
         Eusername = (EditText) findViewById(R.id.editTextUsername);
         Epassword = (EditText) findViewById(R.id.editTextPassword);
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
 
         nextPage = (Button) findViewById(R.id.buttonNextPage);
         nextPage.setOnClickListener(new OnClickListener() {
@@ -48,33 +45,23 @@ public class LoginActivity extends Activity {
     private Runnable send = new Runnable() {
         @Override
         public void run() {
-            try {
-                Socket mySocket = new Socket("192.168.1.156", 2597); //98.109.17.60 //10.0.2.2
-                String up = username + " " + password;
-                System.out.println(up);
-                ObjectOutputStream objectOutputStream = new ObjectOutputStream(mySocket.getOutputStream());
-                UserObject user = new UserObject();
-                user.setUsername(username);
-                user.setPassword(password);
-                objectOutputStream.writeObject(user);
-                objectOutputStream.flush();
-                ObjectInputStream objectInputStream = new ObjectInputStream(mySocket.getInputStream());
-                user = (UserObject) objectInputStream.readObject();
-                Log.d("Jet", "Get something");
-                if (user.getStatus() == 1) {
-                    //startActivity
-                    Intent intent = new Intent();
-                    intent.setClass(LoginActivity.this, MainActivity.class);
-                    startActivity(intent);
-                    LoginActivity.this.finish();
-                } else {
-                    Log.d("Jet", "no match");
-                }
-                objectInputStream.close();
-                objectOutputStream.close();
-                mySocket.close();
-            } catch (Exception e) {
-                Log.d("Jet", e.getMessage());
+            CommToServ.connect();
+            String up = username + " " + password;
+            System.out.println(up);
+            UserObject user = new UserObject();
+            user.setUsername(username);
+            user.setPassword(password);
+            user = CommToServ.talkToServer(user);
+            Log.d("Jet", "Get something");
+            if (user.getStatus() == 1) {
+                user.setStatus(0);
+                //startActivity
+                Intent intent = new Intent();
+                intent.setClass(LoginActivity.this, MainActivity.class);
+                startActivity(intent);
+                LoginActivity.this.finish();
+            } else {
+                Log.d("Jet", "no match");
             }
         }
     };

@@ -8,7 +8,9 @@ package com.cs656chatapp.common;
 import java.io.Serializable;
 
 public class UserObject implements Serializable {
-
+    /**
+     *
+     */
     private static final long serialVersionUID = 1L;
 
     int userID;
@@ -16,6 +18,8 @@ public class UserObject implements Serializable {
     String name;
     String password;
     int status;
+    String operation;
+    String message;
 
     public UserObject() {
     }
@@ -58,5 +62,21 @@ public class UserObject implements Serializable {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public void setOperation(String operation) {
+        this.operation= operation;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

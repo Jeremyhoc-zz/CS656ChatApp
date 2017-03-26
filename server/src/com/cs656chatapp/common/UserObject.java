@@ -8,51 +8,75 @@ package com.cs656chatapp.common;
 import java.io.Serializable;
 
 public class UserObject implements Serializable {
-	
-private static final long serialVersionUID = 1L;
-	
-int userID;
-   String username;
-   String name;
-	String password;
-	int status;
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
 
-	public UserObject() {
-	}
+    int userID;
+    String username;
+    String name;
+    String password;
+    int status;
+    String operation;
+    String message;
 
-   public int getUserID() {
-		return userID;
-	}
-	public void setUserID(int userID) { //This will probably never be used.
-		this.userID = userID;
-	}
+    public UserObject() {
+    }
 
-	public String getName() {
-		return name;
-	}
-	public void setClientName(String name) {
-		this.name = name;
-	}
+    public int getUserID() {
+        return userID;
+    }
 
-	public String getUsername() {
-		return username;
-	}
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public void setUserID(int userID) { //This will probably never be used.
+        this.userID = userID;
+    }
 
-	public String getPassword() {
-		return password;
-	}
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public String getName() {
+        return name;
+    }
 
-   public int getStatus() {
-		return status;
-	}
-	public void setStatus(int status) {
-		this.status = status;
-	}
+    public void setClientName(String name) {
+        this.name = name;
+    }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public void setOperation(String operation) {
+        this.operation= operation;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }
