@@ -22,7 +22,7 @@ public class CommToServ {
 
     public static void connect() {
         try {
-            mySocket = new Socket("192.168.1.156", 2597); //98.109.17.60 //10.0.2.2
+            mySocket = new Socket("192.168.56.1", 2597); //98.109.17.60 //10.0.2.2
             OUT = new ObjectOutputStream(mySocket.getOutputStream());
             IN = new ObjectInputStream(mySocket.getInputStream());
         } catch (Exception e) {
