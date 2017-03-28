@@ -9,7 +9,7 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="title_section1">Buddy List</string>
     <string name="title_section2">Recent Chats</string>
-    <string name="title_section3">Settings</string>
+    <string name="title_section3">My Profile</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>

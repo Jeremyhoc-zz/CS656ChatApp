@@ -164,15 +164,8 @@ class ThreadClientHandler extends Thread {
 	
 	public UserObject logIn(UserObject user) throws ClassNotFoundException, IOException, SQLException {
 		clients.put(user.getUsername(), incoming);
-		rs = dbconn.executeSQL("select user_id, name, username from users where user_id IN (select friend_id from friends where user_id="+user.getUserID()+") OR user_id IN (select user_id from friends where friend_id="+user.getUserID()+");");
-		String friends="";
-		while(rs.next())
-		{
-			friends +=rs.getString("username") + ",";
-		}
-		System.out.println("The friends are: "+friends);
-		//	user.setMessage(friends);
-		//}
+		user = loadBuddyList(user);
+		
 		//notifyLoggedIn(user.getName());
 		user.setStatus(1);
 		return user;
@@ -219,9 +212,15 @@ class ThreadClientHandler extends Thread {
 		return user;
 	}
 	
-	public UserObject loadBuddyList(UserObject user) {
+	public UserObject loadBuddyList(UserObject user) throws ClassNotFoundException, IOException, SQLException {
 		//Grab user ID's friends in DB that are online, return to client for loading
-		user.setStatus(1);
+		rs = dbconn.executeSQL("select user_id, name, username from users where user_id IN (select friend_id from friends where user_id="+user.getUserID()+") OR user_id IN (select user_id from friends where friend_id="+user.getUserID()+");");
+		String friends="";
+		while(rs.next())
+		{
+			friends +=rs.getString("username") + ",";
+		}
+		user.setMessage(friends);
 		return user;
 	}
 

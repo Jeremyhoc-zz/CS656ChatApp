@@ -70,6 +70,7 @@ public class LoginActivity extends Activity {
                 //startActivity
                 Intent intent = new Intent();
                 intent.setClass(LoginActivity.this, MainActivity.class);
+                intent.putExtra("userObject",user);
                 startActivity(intent);
                 LoginActivity.this.finish();
             } else {

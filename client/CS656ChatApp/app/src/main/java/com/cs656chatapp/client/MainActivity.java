@@ -13,10 +13,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+import android.content.Intent;
 
 public class MainActivity extends Activity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks {
 
+    String buddy_list;
+    TextView textView;
     /**
      * Fragment managing the behaviors, interactions and presentation of the
      * navigation drawer.
@@ -33,6 +37,17 @@ public class MainActivity extends Activity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        /**
+         * Get same UserObject from previous intent.
+         */
+        Intent intent = getIntent();
+        UserObject user = (UserObject)intent.getSerializableExtra("userObject");
+
+        buddy_list =user.getMessage();
+        textView = (TextView)findViewById(R.id.buddy_1);
+        textView.setText(buddy_list);
+
 
         mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager()
                 .findFragmentById(R.id.navigation_drawer);
