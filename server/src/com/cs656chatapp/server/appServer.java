@@ -158,6 +158,7 @@ class ThreadClientHandler extends Thread {
 		
 		//Login Process
 		rs = dbconn.executeSQL("select username, password from Users;");
+<<<<<<< HEAD
 		int find = 0;
 		while(rs.next() && find != 1)
 		{
@@ -185,6 +186,41 @@ class ThreadClientHandler extends Thread {
 			return true;
 		
 			return false;
+=======
+		boolean found = false;
+		int id = 0;
+		while(rs.next() && found != true)
+		{
+			if (user.getUsername().equals(rs.getString("username")) && user.getPassword().equals(rs.getString("password"))) {
+				user.setUsername(rs.getString("username"));
+				user.setUserID(rs.getInt("ID"));
+				found = true;
+		}
+		//Find all friends of Client X with specific ID,
+		rs = dbconn.executeSQL("select friends of user");
+		String friends = "";
+		while (rs.next()) {
+			friends += rs.getString("") + ",";
+		}
+			user.setMessage(friends);
+		}
+		notifyLoggedIn(user.getName());
+		return found;
+>>>>>>> 8292438ba6fb49a61d288a78e4029c86c4c93dc8
+	}
+	
+	public void notifyLoggedIn(String myName) throws ClassNotFoundException, IOException, SQLException {
+		rs = dbconn.executeSQL("select friends of client X;");
+		while(rs.next()) {
+			String friendsName = rs.getString("name");
+			Socket friend = findSocket(friendsName);
+			OutputStream os = friend.getOutputStream();
+	        ObjectOutputStream toFriendSocket = new ObjectOutputStream(os);
+	        UserObject msgToFriend = new UserObject();
+	        msgToFriend.setOperation("Logged In," + myName);
+	        toFriendSocket.writeObject(msgToFriend);
+	        toFriendSocket.flush();
+		}
 	}
 	
 	public UserObject createAccount(UserObject user) {
@@ -258,8 +294,24 @@ class ThreadClientHandler extends Thread {
 		return user;
 	}
 	
+	public void notifyLoggedOut(String myName) throws ClassNotFoundException, IOException, SQLException {
+		rs = dbconn.executeSQL("select friends of client X;");
+		while(rs.next()) {
+			String friendsName = rs.getString("name");
+			Socket friend = findSocket(friendsName);
+			OutputStream os = friend.getOutputStream();
+	        ObjectOutputStream toFriendSocket = new ObjectOutputStream(os);
+	        UserObject msgToFriend = new UserObject();
+	        msgToFriend.setOperation("Logged Out," + myName);
+	        toFriendSocket.writeObject(msgToFriend);
+	        toFriendSocket.flush();
+		}
+	}
+	
 	public UserObject logOut(UserObject user) {
 		//Broadcast to user's friends this client is logging off so they can refresh their screens, then log client off.
+		//rs = ;
+		//notifyLoggedOut();
 		user.setStatus(1);
 		return user;
 	}

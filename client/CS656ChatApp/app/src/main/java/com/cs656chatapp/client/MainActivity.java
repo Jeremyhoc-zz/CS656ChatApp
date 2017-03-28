@@ -74,6 +74,12 @@ public class MainActivity extends Activity implements
         actionBar.setTitle(mTitle);
     }
 
+    /*public boolean onCreateBuddyList() {
+        String friends = user.getMessage();
+        String friend = friends.split(",");
+        loadBuddyList(friend);
+    }*/
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (!mNavigationDrawerFragment.isDrawerOpen()) {
