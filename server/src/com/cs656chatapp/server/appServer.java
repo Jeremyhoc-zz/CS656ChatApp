@@ -54,17 +54,17 @@ class ThreadClientHandler extends Thread {
 			IN = new ObjectInputStream(incoming.getInputStream());
 			OUT = new ObjectOutputStream(incoming.getOutputStream());
 			user = (UserObject)IN.readObject();
+			
 			System.out.println(incoming.getLocalAddress().getHostAddress() + "(" + user.getUsername() + ") is attempting to log in.");
 
 			dbconn = new dbConnection();
-
-			boolean found = logIn(user);
-			if (found)
+			user=logIn(user);
+			int found = user.getStatus();
+			if (found==1 || found==8)
 			{
 				System.out.println(user.getUsername());
 				System.out.println(incoming);
 				clients.put(user.getUsername(), incoming);
-				user.setStatus(1);
 				OUT.writeObject(user);
 				OUT.flush();
 				System.out.println(user.getUsername() + " has successfully logged in.");
@@ -110,7 +110,16 @@ class ThreadClientHandler extends Thread {
 					System.out.println("Response sent out.");
 				}
 				System.out.println(user.getUsername() + " has logged out.");
-			} else {
+			} else if(found==9){
+				System.out.println("User already exists so status= "+user.getStatus());
+				System.out.println(user.getUsername());
+				System.out.println(incoming);
+				clients.put(user.getUsername(), incoming);
+				OUT.writeObject(user);
+				OUT.flush();
+				
+			}
+			else {
 				System.out.println(incoming.getLocalAddress().getHostAddress() + "(" + user.getUsername() + ") failed to log in with wrong username or password.");
 			}
 			// Close the connection.
@@ -128,16 +137,54 @@ class ThreadClientHandler extends Thread {
 		}
 	}
 	
-	public boolean logIn(UserObject user) throws ClassNotFoundException, IOException, SQLException {
+	public UserObject logIn(UserObject user) throws ClassNotFoundException, IOException, SQLException {
+		//check status
+		if(user.getStatus()==7){
+			//new user creation
+			System.out.println("Attempting to create new user");
+			clients.put(user.getUsername(), incoming);
+			if(NewUser(user)){
+				System.out.println("New user created successfully");
+				user.setStatus(8);
+			}
+			else{
+				System.out.println("New user not created! Username already exists!");
+				user.setStatus(9);
+				return user;
+			}
+			OUT.writeObject(user);
+			OUT.flush();	
+		}
+		
 		//Login Process
 		rs = dbconn.executeSQL("select username, password from Users;");
-		boolean found = false;
-		while(rs.next() && found != true)
+		int find = 0;
+		while(rs.next() && find != 1)
 		{
 			if (user.getUsername().equals(rs.getString("username")) && user.getPassword().equals(rs.getString("password")))
-				found = true;
+				find = 1;
 		}
-		return found;
+		if(find==1)
+			user.setStatus(1);
+		else
+			user.setStatus(0);
+		return user;
+	}
+	
+	public boolean NewUser(UserObject user) throws ClassNotFoundException, IOException, SQLException {
+		//Check if user already exists Process
+		rs = dbconn.executeSQL("select username from Users;");
+		boolean ret = false;
+		while(rs.next())
+		{
+			if (user.getUsername().equals(rs.getString("username")))
+				return false;
+		}
+		ret=dbconn.executeUpdate("insert into users(username,password,name) values(\""+user.getUsername()+"\",\""+user.getPassword()+"\",\""+user.getName()+"\");");
+		if(ret)
+			return true;
+		
+			return false;
 	}
 	
 	public UserObject createAccount(UserObject user) {

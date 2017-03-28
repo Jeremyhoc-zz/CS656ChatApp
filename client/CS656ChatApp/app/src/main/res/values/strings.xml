@@ -17,4 +17,9 @@
     <string name="title_item_list">Items</string>
     <string name="title_item_detail">Item Detail</string>
 
+    <string name="enter_info">Enter your information:</string>
+    <string name="name">name</string>
+    <string name="confirm_password">confirm password</string>
+    <string name="register">REGISTER</string>
+
 </resources>

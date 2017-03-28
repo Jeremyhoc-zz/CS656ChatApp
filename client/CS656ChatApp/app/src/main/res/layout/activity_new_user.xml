@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cs656chatapp.client.NewUserActivity">
+
+   <RelativeLayout
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:background="#000">
+
+       <TextView
+           android:id="@+id/NUTextView1"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:layout_alignParentLeft="true"
+           android:layout_alignParentTop="true"
+           android:layout_marginTop="40dp"
+           android:gravity="center"
+           android:text="@string/enter_info"
+           android:textAppearance="?android:attr/textAppearanceLarge"
+           android:textColor="@color/AliceBlue"
+           android:textSize="30sp" />
+
+       <EditText
+           android:id="@+id/setName"
+           android:layout_width="wrap_content"
+           android:layout_height="30dp"
+           android:layout_below="@+id/NUTextView1"
+           android:layout_centerHorizontal="true"
+           android:layout_marginTop="46dp"
+           android:background="@drawable/textinputborder"
+           android:ems="10"
+           android:hint="@string/name"
+           android:inputType="textPersonName"
+           android:paddingLeft="10dp"
+           android:textColor="@color/Black"
+           android:textColorHint="@color/Silver" />
+
+       <EditText
+           android:id="@+id/setUserName"
+           android:layout_width="wrap_content"
+           android:layout_height="30dp"
+           android:layout_below="@+id/setName"
+           android:layout_centerHorizontal="true"
+           android:layout_marginTop="26dp"
+           android:background="@drawable/textinputborder"
+           android:ems="10"
+           android:hint="@string/username"
+           android:inputType="textPersonName"
+           android:paddingLeft="10dp"
+           android:textColor="@color/Black"
+           android:textColorHint="@color/Silver" />
+
+       <EditText
+           android:id="@+id/setPassword"
+           android:layout_width="wrap_content"
+           android:layout_height="30dp"
+           android:layout_alignLeft="@+id/setUserName"
+           android:layout_alignRight="@+id/setUserName"
+           android:layout_below="@+id/setUserName"
+           android:layout_marginTop="26dp"
+           android:background="@drawable/textinputborder"
+           android:ems="10"
+           android:hint="@string/password"
+           android:inputType="textPassword"
+           android:paddingLeft="10dp"
+           android:textColor="@color/Black"
+           android:textColorHint="@color/Silver" />
+
+       <EditText
+           android:id="@+id/setConfirmPassword"
+           android:layout_width="wrap_content"
+           android:layout_height="30dp"
+           android:layout_alignLeft="@+id/setPassword"
+           android:layout_alignRight="@+id/setPassword"
+           android:layout_below="@+id/setPassword"
+           android:layout_marginTop="26dp"
+           android:background="@drawable/textinputborder"
+           android:ems="10"
+           android:hint="@string/confirm_password"
+           android:inputType="textPassword"
+           android:paddingLeft="10dp"
+           android:textColor="@color/Black"
+           android:textColorHint="@color/Silver" />
+
+
+
+       <Button
+           android:id="@+id/buttonReg"
+           android:layout_width="wrap_content"
+           android:layout_height="40dp"
+           android:layout_alignLeft="@+id/setConfirmPassword"
+           android:layout_alignRight="@+id/setConfirmPassword"
+           android:layout_below="@+id/setConfirmPassword"
+           android:layout_marginTop="37dp"
+           android:background="@drawable/buttoninputborder"
+           android:text="@string/register"
+           android:textColor="@color/White"
+           android:textSize="15sp" />
+
+   </RelativeLayout>
+
+</android.support.constraint.ConstraintLayout>

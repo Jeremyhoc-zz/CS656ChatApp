@@ -60,5 +60,17 @@
         android:text="@string/sign_in"
         android:textColor="@color/White"
         android:textSize="15sp" />
+    <Button
+        android:id="@+id/button_new"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_alignLeft="@id/buttonNextPage"
+        android:layout_alignRight="@id/buttonNextPage"
+        android:layout_below="@id/buttonNextPage"
+        android:layout_marginTop="70dp"
+        android:background="@drawable/buttoninputborder"
+        android:text="NEW USER?"
+        android:textColor="@color/White"
+        android:textSize="15sp"/>
 
 </RelativeLayout>

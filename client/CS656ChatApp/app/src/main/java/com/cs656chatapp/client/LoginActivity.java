@@ -14,7 +14,7 @@ import android.widget.EditText;
 
 public class LoginActivity extends Activity {
 
-    Button nextPage;
+    Button nextPage, newButton;
     EditText Eusername, Epassword;
     String username, password;
     Thread tSend;
@@ -27,6 +27,18 @@ public class LoginActivity extends Activity {
         Epassword = (EditText) findViewById(R.id.editTextPassword);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+
+        newButton = (Button) findViewById(R.id.button_new);
+        newButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(LoginActivity.this, NewUserActivity.class);
+                startActivity(intent);
+                LoginActivity.this.finish();
+            }
+        });
+
 
         nextPage = (Button) findViewById(R.id.buttonNextPage);
         nextPage.setOnClickListener(new OnClickListener() {
