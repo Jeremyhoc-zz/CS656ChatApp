@@ -77,7 +77,7 @@ public class NewUserActivity extends AppCompatActivity {
                 user.setStatus(7);
                 user = CommToServ.talkToServer(user);
                 Log.d("Jet", "Get something");
-                if (user.getStatus() == 8) {
+                if (user.getStatus() == 1) {
                     // user.setStatus(0);
                     //startActivity
                     Log.d("Jet", "Status= " + user.getStatus());

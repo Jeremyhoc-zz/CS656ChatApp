@@ -54,13 +54,12 @@ class ThreadClientHandler extends Thread {
 			IN = new ObjectInputStream(incoming.getInputStream());
 			OUT = new ObjectOutputStream(incoming.getOutputStream());
 			user = (UserObject)IN.readObject();
-			
 			System.out.println(incoming.getLocalAddress().getHostAddress() + "(" + user.getUsername() + ") is attempting to log in.");
 
 			dbconn = new dbConnection();
-			user=logIn(user);
+			user = checkCredentials(user);
 			int found = user.getStatus();
-			if (found==1 || found==8)
+			if (found==1)
 			{
 				System.out.println(user.getUsername());
 				System.out.println(incoming);
@@ -123,9 +122,6 @@ class ThreadClientHandler extends Thread {
 				System.out.println(incoming.getLocalAddress().getHostAddress() + "(" + user.getUsername() + ") failed to log in with wrong username or password.");
 			}
 			// Close the connection.
-			
-			
-			
 			rs.close();
 			IN.close();
 			OUT.close();
@@ -137,42 +133,52 @@ class ThreadClientHandler extends Thread {
 		}
 	}
 	
-	public UserObject logIn(UserObject user) throws ClassNotFoundException, IOException, SQLException {
-		//check status
-		if(user.getStatus()==7){
+	public UserObject checkCredentials(UserObject user) throws ClassNotFoundException, IOException, SQLException {
+		//Login Process
+		if(user.getStatus()==7) {
 			//new user creation
 			System.out.println("Attempting to create new user");
-			clients.put(user.getUsername(), incoming);
-			if(NewUser(user)){
+			if(createUser(user)) {
 				System.out.println("New user created successfully");
-				user.setStatus(8);
-			}
-			else{
+				user = logIn(user);
+			} else {
 				System.out.println("New user not created! Username already exists!");
 				user.setStatus(9);
-				return user;
 			}
-			OUT.writeObject(user);
-			OUT.flush();	
+			return user;
+		} else {
+			rs = dbconn.executeSQL("select username, password from Users;");
+			boolean found = false;
+			while(rs.next() && !found)
+			{
+				System.out.println("hit");
+				if (user.getUsername().equals(rs.getString("username")) && user.getPassword().equals(rs.getString("password"))) {
+					user.setUsername(rs.getString("username"));
+					//user.setUserID(rs.getInt("ID"));
+					user.setStatus(1);
+					found = true;
+					user = logIn(user);
+				}
+			}
+			return user;
 		}
-		
-		//Login Process
-		rs = dbconn.executeSQL("select username, password from Users;");
-<<<<<<< HEAD
-		int find = 0;
-		while(rs.next() && find != 1)
-		{
-			if (user.getUsername().equals(rs.getString("username")) && user.getPassword().equals(rs.getString("password")))
-				find = 1;
-		}
-		if(find==1)
-			user.setStatus(1);
-		else
-			user.setStatus(0);
+	}
+	
+	public UserObject logIn(UserObject user) throws ClassNotFoundException, IOException, SQLException {
+		clients.put(user.getUsername(), incoming);
+		//rs = dbconn.executeSQL("select friends of user");
+		String friends = "";
+		//while (rs.next()) {
+		//	friends += rs.getString("") + ",";
+		//}
+		//	user.setMessage(friends);
+		//}
+		//notifyLoggedIn(user.getName());
+		user.setStatus(1);
 		return user;
 	}
 	
-	public boolean NewUser(UserObject user) throws ClassNotFoundException, IOException, SQLException {
+	public boolean createUser(UserObject user) throws ClassNotFoundException, IOException, SQLException {
 		//Check if user already exists Process
 		rs = dbconn.executeSQL("select username from Users;");
 		boolean ret = false;
@@ -182,31 +188,8 @@ class ThreadClientHandler extends Thread {
 				return false;
 		}
 		ret=dbconn.executeUpdate("insert into users(username,password,name) values(\""+user.getUsername()+"\",\""+user.getPassword()+"\",\""+user.getName()+"\");");
-		if(ret)
-			return true;
-		
-			return false;
-=======
-		boolean found = false;
-		int id = 0;
-		while(rs.next() && found != true)
-		{
-			if (user.getUsername().equals(rs.getString("username")) && user.getPassword().equals(rs.getString("password"))) {
-				user.setUsername(rs.getString("username"));
-				user.setUserID(rs.getInt("ID"));
-				found = true;
-		}
-		//Find all friends of Client X with specific ID,
-		rs = dbconn.executeSQL("select friends of user");
-		String friends = "";
-		while (rs.next()) {
-			friends += rs.getString("") + ",";
-		}
-			user.setMessage(friends);
-		}
-		notifyLoggedIn(user.getName());
-		return found;
->>>>>>> 8292438ba6fb49a61d288a78e4029c86c4c93dc8
+		if(ret) return true;
+		return false;
 	}
 	
 	public void notifyLoggedIn(String myName) throws ClassNotFoundException, IOException, SQLException {
