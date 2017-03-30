@@ -100,8 +100,9 @@ class ThreadClientHandler extends Thread {
 					else if (operation.equals("Delete Friend")) {
 						user = deleteFriend(user);
 					}
-					else if (operation.equals("Logout")) {
+					else if (operation.equals("Log Out")) {
 						user = logOut(user);
+						done=true;
 					}
 					
 					OUT.writeObject(user);
@@ -294,6 +295,7 @@ class ThreadClientHandler extends Thread {
 		//Broadcast to user's friends this client is logging off so they can refresh their screens, then log client off.
 		//rs = ;
 		//notifyLoggedOut();
+		user.setMessage("Log out initiated.");
 		user.setStatus(1);
 		return user;
 	}
