@@ -17,7 +17,7 @@ import android.widget.TextView;
 import android.content.Intent;
 
 public class MainActivity extends Activity implements
-        NavigationDrawerFragment.NavigationDrawerCallbacks {
+        NavigationDrawerFragment.NavigationDrawerCallbacks  {
 
     String buddy_list;
     TextView textView;
@@ -43,6 +43,11 @@ public class MainActivity extends Activity implements
          */
         Intent intent = getIntent();
         UserObject user = (UserObject)intent.getSerializableExtra("userObject");
+
+        System.out.println("Attempting to start service");
+        Intent i = new Intent(MainActivity.this, serverListener.class);
+        this.startService(i);
+        System.out.println("After starting service");
 
         buddy_list =user.getMessage();
         textView = (TextView)findViewById(R.id.buddy_1);

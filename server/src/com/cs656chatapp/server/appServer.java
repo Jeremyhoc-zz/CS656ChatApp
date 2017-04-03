@@ -55,10 +55,14 @@ class ThreadClientHandler extends Thread {
 			OUT = new ObjectOutputStream(incoming.getOutputStream());
 			user = (UserObject)IN.readObject();
 			System.out.println(incoming.getLocalAddress().getHostAddress() + "(" + user.getUsername() + ") is attempting to log in.");
-
-			dbconn = new dbConnection();
-			user = checkCredentials(user);
-			int found = user.getStatus();
+			//int found = 0;
+			//if (findSocket(user.getUsername()) == null) {
+				dbconn = new dbConnection();
+				user = checkCredentials(user);
+				int found = user.getStatus();
+			/*} else {
+				found = 1;
+			}*/
 			if (found==1)
 			{
 				System.out.println(user.getUsername());
@@ -69,6 +73,7 @@ class ThreadClientHandler extends Thread {
 				System.out.println(user.getUsername() + " has successfully logged in.");
 				while(!done) {
 					//Maintain connection for requests and processing
+					System.out.println("Waiting for a command from " + user.getUsername());
 					user = (UserObject) IN.readObject();
 					System.out.println("Request coming in.");
 					
@@ -78,8 +83,16 @@ class ThreadClientHandler extends Thread {
 					int status = user.getStatus();
 					String operation = user.getOperation();
 					String message = user.getMessage();
-					
+					System.out.println(operation);
+				
+					if (operation.equals("Test")) {
+						//user = setMessage(user);
+						System.out.println("Test!!!");
+					}
 					if (operation.equals("Set Message")) {
+						user.setMessage("First message in!");
+						OUT.writeObject(user);
+						OUT.flush();
 						user = setMessage(user);
 					} 
 					else if (operation.equals("Load buddy list")) {
@@ -103,6 +116,8 @@ class ThreadClientHandler extends Thread {
 					else if (operation.equals("Log Out")) {
 						user = logOut(user);
 						done=true;
+					} else {
+						System.out.println("Empty object came from " + user.getUsername());
 					}
 					
 					OUT.writeObject(user);
@@ -128,7 +143,7 @@ class ThreadClientHandler extends Thread {
 			OUT.close();
 			incoming.close();
 		} catch (EOFException e) {
-			System.out.println("Execute function here.");
+			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -296,6 +311,7 @@ class ThreadClientHandler extends Thread {
 		//rs = ;
 		//notifyLoggedOut();
 		user.setMessage("Log out initiated.");
+		clients.remove(user.getUsername());
 		user.setStatus(1);
 		return user;
 	}

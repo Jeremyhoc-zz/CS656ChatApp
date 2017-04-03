@@ -279,7 +279,7 @@ public class NavigationDrawerFragment extends Fragment {
             try {
                 UserObject user = new UserObject();
                 user.setOperation("Set Message");
-                user = CommToServ.talkToServer(user);
+                user = serverConnection.sendToServer(user);
                 if (user.getStatus() == 1) {
                     String msg = user.getMessage();
                     Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT)
@@ -297,7 +297,7 @@ public class NavigationDrawerFragment extends Fragment {
             try {
                 UserObject user = new UserObject();
                 user.setOperation("Log Out");
-                user = CommToServ.talkToServer(user);
+                user = serverConnection.sendToServer(user);
                 if (user.getStatus() == 1) {
 
                     String msg = user.getMessage();
