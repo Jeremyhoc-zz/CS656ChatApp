@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.*;
 
 public class appServer {
 	public static void main(String[] args) { //throws ClassNotFoundException, SQLException {
@@ -84,16 +85,16 @@ class ThreadClientHandler extends Thread {
 					String operation = user.getOperation();
 					String message = user.getMessage();
 					System.out.println(operation);
-				
-					if (operation.equals("Test")) {
-						//user = setMessage(user);
-						System.out.println("Test!!!");
-					}
+
 					if (operation.equals("Set Message")) {
 						user.setMessage("First message in!");
 						OUT.writeObject(user);
 						OUT.flush();
-						user = setMessage(user);
+						TimeUnit.SECONDS.sleep(2);
+						UserObject user2 = new UserObject();
+						user2 = setExample(user2);
+						OUT.writeObject(user2);
+						OUT.flush();						
 					} 
 					else if (operation.equals("Load buddy list")) {
 						user = loadBuddyList(user);
@@ -221,7 +222,7 @@ class ThreadClientHandler extends Thread {
 		return user;
 	}
 	
-	public UserObject setMessage(UserObject user) {
+	public UserObject setExample(UserObject user) {
 		//Test method!
 		user.setMessage("Client-Server Conn works.");
 		user.setStatus(1);
@@ -249,15 +250,19 @@ class ThreadClientHandler extends Thread {
 	public UserObject sendMessage(UserObject user) throws ClassNotFoundException, IOException {
 		//Add message to DB, Grab socket of friend's username in variable clients, and send to that receiver.
 		String[] msgSplit = user.getMessage().split(",");
-		String friendsName = msgSplit[0];
+		String from = user.getUsername();
+		String to = msgSplit[0];
 		String message = msgSplit[1];
-
-		Socket client = findSocket(friendsName);
+        UserObject sendMsg = new UserObject();
+        sendMsg.setOperation("incoming message");
+        sendMsg.setMessage(from + "," + message);
+		
+		Socket client = findSocket(to);
 		
 		OutputStream os = client.getOutputStream();
-        ObjectOutputStream toFriend = new ObjectOutputStream(os);
-        toFriend.writeObject(message);
-        toFriend.flush();
+        ObjectOutputStream sendTo = new ObjectOutputStream(os);
+        sendTo.writeObject(message);
+        sendTo.flush();
         
         //addMessageToDB(user);
         user.setStatus(1);

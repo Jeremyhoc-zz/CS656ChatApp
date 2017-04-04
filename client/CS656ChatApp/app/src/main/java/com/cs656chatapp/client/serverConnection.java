@@ -19,7 +19,7 @@ public class serverConnection {
     protected static Socket mySocket = null;
     protected static ObjectInputStream IN = null;
     protected static ObjectOutputStream OUT = null;
-    protected static UserObject userStored = new UserObject();
+    protected static UserObject savedUser = new UserObject();
 
     public serverConnection() {
     }
@@ -29,8 +29,8 @@ public class serverConnection {
             mySocket = new Socket("192.168.1.156", 2597); //98.109.17.60 //10.0.2.2
             OUT = new ObjectOutputStream(mySocket.getOutputStream());
             IN = new ObjectInputStream(mySocket.getInputStream());
-            userStored.setUsername(user.getUsername());
-            userStored.setPassword(user.getPassword());
+            savedUser.setUsername(user.getUsername());
+            savedUser.setPassword(user.getPassword());
             OUT.writeObject(user);
             OUT.flush();
             user = (UserObject) IN.readObject();
@@ -43,8 +43,8 @@ public class serverConnection {
 
     public static UserObject sendToServer(UserObject user) {
         try {
-            user.setUsername(userStored.getUsername());
-            user.setPassword(userStored.getPassword());
+            user.setUsername(savedUser.getUsername());
+            user.setPassword(savedUser.getPassword());
             OUT.writeObject(user);
             OUT.flush();
         } catch (Exception e) {
@@ -76,6 +76,6 @@ public class serverConnection {
     }
 
     public static UserObject getUserObject() {
-        return userStored;
+        return savedUser;
     }
 }
