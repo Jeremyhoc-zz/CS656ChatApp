@@ -59,20 +59,19 @@ public class LoginActivity extends Activity {
     private Runnable send = new Runnable() {
         @Override
         public void run() {
-            CommToServ.connect();
             String up = username + " " + password;
             System.out.println(up);
             UserObject user = new UserObject();
             user.setUsername(username);
             user.setPassword(password);
-            user = CommToServ.talkToServer(user);
+            user = serverConnection.connect(user);
             Log.d("Jet", "Get something");
             if (user.getStatus() == 1) {
                 user.setStatus(0);
                 //startActivity
                 Intent intent = new Intent();
                 intent.setClass(LoginActivity.this, MainActivity.class);
-                intent.putExtra("userObject",user);
+                intent.putExtra("userObject", user);
                 startActivity(intent);
                 LoginActivity.this.finish();
             } else {

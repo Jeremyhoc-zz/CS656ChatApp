@@ -81,14 +81,12 @@ public class NewUserActivity extends AppCompatActivity {
             // private Runnable send = runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                CommToServ.connect();
                 UserObject user = new UserObject();
                 user.setClientName(name);
                 user.setUsername(username);
                 user.setPassword(password);
                 user.setStatus(7);
-                user = CommToServ.talkToServer(user);
-                Log.d("Jet", "Get something");
+                user = serverConnection.connect(user);
                 if (user.getStatus() == 1) {
                     // user.setStatus(0);
                     //startActivity
