@@ -3,17 +3,14 @@ package com.cs656chatapp.client;
 import com.cs656chatapp.common.UserObject;
 
 import android.app.Service;
-import android.app.IntentService;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
-import android.os.Handler;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.net.ServerSocket;
 
 /**
  * Created by Jeremy on 3/23/2017.
@@ -25,9 +22,7 @@ public class serverListener extends Service {
     protected static Socket socket = null;
     protected static ObjectInputStream IN = null;
     protected static ObjectOutputStream OUT = null;
-    protected static UserObject user = null;
-    //protected static ServerSocket serverSocket = null;
-    //protected static Handler mHandler = null;
+    protected static UserObject savedUser = null;
 
     public IBinder onBind(Intent intent) {
         return null;
@@ -35,25 +30,19 @@ public class serverListener extends Service {
 
     @Override
     public void onCreate() {
-        System.out.println("Creating");
+        Log.d("Logs: ", "Creating");
         super.onCreate();
-        //mHandler = new Handler();
     }
 
     @Override
     public void onStart(Intent intent, int startId) {
-        System.out.println("onStart");
         Toast.makeText(this, "Starting up service", Toast.LENGTH_LONG).show();
 
         try {
             socket = serverConnection.getSocket();
             IN = serverConnection.getInputStream();
             OUT = serverConnection.getOutputStream();
-            user = serverConnection.getUserObject();
-            /*Log.d("Logs: ", "serverListener - socket is: " + socket);
-            Log.d("Logs: ", "serverListener - socket created. Creating serverSocket with port = " + socket.getPort() + " and address = " + socket.getInetAddress());
-            serverSocket = new ServerSocket(socket.getPort(), 0, socket.getInetAddress());
-            Log.d("Logs: ", "serverListener - Created serverSocket: " + serverSocket);*/
+            savedUser = serverConnection.getUserObject();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -61,27 +50,48 @@ public class serverListener extends Service {
         new Thread(listenToServer).start(); // Runnable listen to server
     }
 
-    private static Runnable listenToServer = new Runnable() {
+    private Runnable listenToServer = new Runnable() {
+
         public void run() {
-            System.out.println("running listenToServer");
+            Log.d("Logs: ", "running listenToServer");
             boolean done = false;
-            //socket = serverSocket.accept();
-            //System.out.println("serverSocket accepted");
+            int i = 0;
             while (!done) {
+                System.out.println(i++ + ": Waiting...");
                 try {
-                    System.out.println("Waiting...");
                     UserObject user = (UserObject)IN.readObject();
-                    System.out.println("Incoming message");
+                    user.setUsername(savedUser.getUsername());
+                    savedUser.setPassword(savedUser.getPassword());
+                    Log.d("Logs: ", "message in listenToServer = " + user.getMessage());
+                    //Thread t = new Thread(new performOperation(user, i));
+                    //t.start();
+/*                    System.out.println("Incoming message");
                     String message = user.getMessage();
-                    System.out.println("Operation is ... " + message);
+                    System.out.println("Operation is ... " + message);*/
                     //Toast.makeText(this, operation, Toast.LENGTH_SHORT).show();
                     //done = true;
                 } catch (Exception e) {
                     e.printStackTrace();
+                    done = true;
                 }
             }
         }
     };
+
+    class performOperation implements Runnable {
+        UserObject user;
+        int i;
+        performOperation(UserObject user, int i) {
+            this.user = user;
+            this.i = i;
+            Log.d("Logs: ", i++ + "AFTER: Message from this.user = " + this.user.getMessage() + "\nAnd from user = " + user.getMessage());
+        }
+
+        public void run() {
+            String message = user.getMessage();
+            Log.d("Logs: ", i++ + ": Message is ... " + message);
+        }
+    }
 
     public void onDestroy() {
         try {
