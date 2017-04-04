@@ -64,6 +64,8 @@ public class NavigationDrawerFragment extends Fragment {
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
 
+    UserObject user;
+
     public NavigationDrawerFragment() {
 
     }
@@ -71,6 +73,9 @@ public class NavigationDrawerFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent i = getActivity().getIntent();
+        user = (UserObject) i.getSerializableExtra("userObject");
 
         // Read in the flag indicating whether or not the user has demonstrated
         // awareness of the
@@ -262,6 +267,7 @@ public class NavigationDrawerFragment extends Fragment {
         // See also
         // showGlobalContextActionBar, which controls the top-left area of the
         // action bar.
+
         if (mDrawerLayout != null && isDrawerOpen()) {
             inflater.inflate(R.menu.global, menu);
             showGlobalContextActionBar();
@@ -295,7 +301,7 @@ public class NavigationDrawerFragment extends Fragment {
 
         if (item.getItemId() == R.id.log_out) {
             try {
-                UserObject user = new UserObject();
+               // UserObject user = new UserObject();
                 user.setOperation("Log Out");
                 user = CommToServ.talkToServer(user);
                 if (user.getStatus() == 1) {

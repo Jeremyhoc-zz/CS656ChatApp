@@ -153,6 +153,7 @@ class ThreadClientHandler extends Thread {
 			while(rs.next() && !found)
 			{
 				if (user.getUsername().equals(rs.getString("username")) && user.getPassword().equals(rs.getString("password"))) {
+					user.setClientName(rs.getString("name"));
 					user.setUsername(rs.getString("username"));
 					user.setUserID(rs.getInt("user_id"));
 					user.setStatus(1);
@@ -295,7 +296,8 @@ class ThreadClientHandler extends Thread {
 		//Broadcast to user's friends this client is logging off so they can refresh their screens, then log client off.
 		//rs = ;
 		//notifyLoggedOut();
-		user.setMessage("Log out initiated.");
+		user.setMessage("Log out successful.");
+		clients.remove(user.getUsername(), incoming);
 		user.setStatus(1);
 		return user;
 	}

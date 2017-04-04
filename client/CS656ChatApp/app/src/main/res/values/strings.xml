@@ -21,5 +21,6 @@
     <string name="name">name</string>
     <string name="confirm_password">confirm password</string>
     <string name="register">REGISTER</string>
+    <string name="go_back">Go Back</string>
 
 </resources>

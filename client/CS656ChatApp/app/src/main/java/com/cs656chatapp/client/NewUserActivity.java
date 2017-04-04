@@ -16,7 +16,7 @@ import com.cs656chatapp.common.UserObject;
 
 public class NewUserActivity extends AppCompatActivity {
 
-    Button register;
+    Button register, goBack;
     EditText Ename, Eusername, Epassword, Econfirm_password;
     String name, username, password, confirm_password;
     boolean passwordSwitch = false;
@@ -59,6 +59,18 @@ public class NewUserActivity extends AppCompatActivity {
                     runThread();
                 }
 
+            }
+        });
+
+        goBack = (Button) findViewById(R.id.buttonGoBack);
+        goBack.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent();
+                intent.setClass(NewUserActivity.this, LoginActivity.class);
+                startActivity(intent);
+                NewUserActivity.this.finish();
             }
         });
 

@@ -19,6 +19,8 @@ import android.content.Intent;
 public class MainActivity extends Activity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks {
 
+    Intent intent;
+    UserObject user;
     String buddy_list;
     TextView textView;
     /**
@@ -41,12 +43,13 @@ public class MainActivity extends Activity implements
         /**
          * Get same UserObject from previous intent.
          */
-        Intent intent = getIntent();
-        UserObject user = (UserObject)intent.getSerializableExtra("userObject");
+        intent = getIntent();
+        user = (UserObject)intent.getSerializableExtra("userObject");
 
         buddy_list =user.getMessage();
         textView = (TextView)findViewById(R.id.buddy_1);
         textView.setText(buddy_list);
+        getIntent().putExtra("userObject", user);
 
 
         mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager()
@@ -61,6 +64,7 @@ public class MainActivity extends Activity implements
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
+
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager
                 .beginTransaction()
