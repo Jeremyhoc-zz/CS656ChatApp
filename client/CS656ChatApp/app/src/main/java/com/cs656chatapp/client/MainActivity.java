@@ -6,6 +6,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.BroadcastReceiver;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
@@ -14,7 +15,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.content.Context;
 import android.content.Intent;
+import android.content.BroadcastReceiver;
+import android.support.v4.content.LocalBroadcastManager;
+import android.widget.Toast;
+import android.content.IntentFilter;
 
 public class MainActivity extends Activity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks  {
@@ -34,28 +40,52 @@ public class MainActivity extends Activity implements
      * {@link #restoreActionBar()}.
      */
     private CharSequence mTitle;
+    private BroadcastReceiver receiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /**
-         * Get same UserObject from previous intent.
-         */
+        //--------------Get userObject and load buddy list-------------Get same UserObject from previous intent to load the buddy list.
         intent = getIntent();
         user = (UserObject)intent.getSerializableExtra("userObject");
+        buddy_list = user.getMessage();
+        textView = (TextView)findViewById(R.id.buddy_1);
+        textView.setText(buddy_list);
+        getIntent().putExtra("userObject", user);
+        //--------------End buddy list load-------------
 
         System.out.println("Attempting to start service");
         Intent i = new Intent(MainActivity.this, serverListener.class);
         this.startService(i);
         System.out.println("After starting service");
 
-        buddy_list =user.getMessage();
-        textView = (TextView)findViewById(R.id.buddy_1);
-        textView.setText(buddy_list);
-        getIntent().putExtra("userObject", user);
-
+        receiver = new BroadcastReceiver() {
+        @Override
+            public void onReceive(Context context, Intent intent) {
+                String operation = intent.getStringExtra(serverListener.serverOperation);
+                String message = intent.getStringExtra(serverListener.serverMessage);
+                if (operation.equals("Text")) {
+                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG)
+                            .show();
+                } else if (operation.equals("Text Received")) {
+                    interceptText(message);
+                } else if (operation.equals("Pic Received")) {
+                    interceptPic(message);
+                } else if (operation.equals("Voice Received")) {
+                    interceptVoice(message);
+                } else if (operation.equals("Friend Logged On")) {
+                    addFriendToList(message);
+                } else if (operation.equals("Friend Logged Off")) {
+                    removeFriendFromList(message);
+                } else if (operation.equals("New Friend Request")) {
+                    receiveFriendRequest(message);
+                } else if (operation.equals("Response to Friend Request")) {
+                    responseToFriendRequest(message);
+                }
+            }
+        };
 
         mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager()
                 .findFragmentById(R.id.navigation_drawer);
@@ -64,6 +94,67 @@ public class MainActivity extends Activity implements
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(this).registerReceiver((receiver),
+                new IntentFilter(serverListener.serverResult)
+        );
+    }
+
+    @Override
+    protected void onStop() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        super.onStop();
+    }
+
+    protected void interceptText(String friend) {
+        String[] msgSplit = friend.split(",");
+        String friendName = msgSplit[0];
+        String message = msgSplit[1];
+        //Update conversation between you and friend here with new message
+    }
+
+    protected void interceptPic(String friend) {
+        String[] msgSplit = friend.split(",");
+        String friendName = msgSplit[0];
+        String message = msgSplit[1];
+        //Update conversation between you and friend here with new pic
+    }
+
+    protected void interceptVoice(String friend) {
+        String[] msgSplit = friend.split(",");
+        String friendName = msgSplit[0];
+        String message = msgSplit[1];
+        //Update conversation between you and friend here with new voice
+    }
+
+    protected void receiveFriendRequest(String friend) {
+        String strangerUsername = friend;
+        //Create an area where we can accept/reject the friendship request from strangerUsername
+    }
+
+    protected void responseToFriendRequest(String friend) {
+        String[] msgSplit = friend.split(",");
+        String possiblyMyFriendName = msgSplit[0]; //Who is responding
+        String acceptedOrRejected = msgSplit[1]; //Was it accepted or rejected?
+        if (acceptedOrRejected.equals("accepted")) {
+            addFriendToList(possiblyMyFriendName);
+            //Remove friend request with a positive or make it green.
+        } else if (acceptedOrRejected.equals("rejected")) {
+            //Remove friend request with a negative or make it red.
+        }
+        //Create an area where we can view whether friendship requests have been accepted or rejected.
+    }
+
+    protected void addFriendToList(String friend) {
+        //Simply add this friend's name to the buddy list.
+    }
+
+    protected void removeFriendFromList(String friend) {
+        //Simply remove this friend from the buddy list.
     }
 
     @Override

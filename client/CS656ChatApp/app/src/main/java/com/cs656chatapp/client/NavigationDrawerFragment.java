@@ -286,12 +286,12 @@ public class NavigationDrawerFragment extends Fragment {
                 UserObject user = new UserObject();
                 user.setOperation("Set Message");
                 user = serverConnection.sendToServer(user);
-                if (user.getStatus() == 1) {
+                /*if (user.getStatus() == 1) {
                     String msg = user.getMessage();
                     Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT)
                             .show();
                     user.setStatus(0);
-                }
+                }*/
 
             } catch (Exception e) {
                 Log.d("Jet", e.getMessage());
@@ -301,11 +301,13 @@ public class NavigationDrawerFragment extends Fragment {
 
         if (item.getItemId() == R.id.log_out) {
             try {
-               // UserObject user = new UserObject();
                 user.setOperation("Log Out");
                 user = serverConnection.sendToServer(user);
-                if (user.getStatus() == 1) {
-
+                Intent intent = new Intent();
+                intent.setClass(getActivity(), LoginActivity.class);
+                startActivity(intent);
+                getActivity().finish();
+/*                if (user.getStatus() == 1) {
                     String msg = user.getMessage();
                     System.out.println("This is it: "+msg);
                     Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT)
@@ -315,7 +317,7 @@ public class NavigationDrawerFragment extends Fragment {
                     intent.setClass(getActivity(), LoginActivity.class);
                     startActivity(intent);
                     getActivity().finish();
-                }
+                }*/
 
             } catch (Exception e) {
                 Log.d("Jet", e.getMessage());

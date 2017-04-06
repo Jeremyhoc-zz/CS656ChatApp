@@ -5,6 +5,7 @@ import com.cs656chatapp.common.UserObject;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -23,6 +24,7 @@ public class serverListener extends Service {
     protected static ObjectInputStream IN = null;
     protected static ObjectOutputStream OUT = null;
     protected static UserObject savedUser = null;
+    protected static LocalBroadcastManager broadcaster = null;
 
     public IBinder onBind(Intent intent) {
         return null;
@@ -32,6 +34,7 @@ public class serverListener extends Service {
     public void onCreate() {
         Log.d("Logs: ", "Creating");
         super.onCreate();
+        broadcaster = LocalBroadcastManager.getInstance(this);
     }
 
     @Override
@@ -46,7 +49,6 @@ public class serverListener extends Service {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         new Thread(listenToServer).start(); // Runnable listen to server
     }
 
@@ -55,21 +57,15 @@ public class serverListener extends Service {
         public void run() {
             Log.d("Logs: ", "running listenToServer");
             boolean done = false;
-            int i = 0;
             while (!done) {
-                System.out.println(i++ + ": Waiting...");
+                System.out.println("Waiting...");
                 try {
                     UserObject user = (UserObject)IN.readObject();
                     user.setUsername(savedUser.getUsername());
                     savedUser.setPassword(savedUser.getPassword());
                     Log.d("Logs: ", "message in listenToServer = " + user.getMessage());
-                    //Thread t = new Thread(new performOperation(user, i));
-                    //t.start();
-/*                    System.out.println("Incoming message");
-                    String message = user.getMessage();
-                    System.out.println("Operation is ... " + message);*/
-                    //Toast.makeText(this, operation, Toast.LENGTH_SHORT).show();
-                    //done = true;
+                    Thread t = new Thread(new performOperation(user));
+                    t.start();
                 } catch (Exception e) {
                     e.printStackTrace();
                     done = true;
@@ -80,17 +76,33 @@ public class serverListener extends Service {
 
     class performOperation implements Runnable {
         UserObject user;
-        int i;
-        performOperation(UserObject user, int i) {
+        performOperation(UserObject user) {
             this.user = user;
-            this.i = i;
-            Log.d("Logs: ", i++ + "AFTER: Message from this.user = " + this.user.getMessage() + "\nAnd from user = " + user.getMessage());
         }
 
         public void run() {
+            String operation = user.getOperation();
             String message = user.getMessage();
-            Log.d("Logs: ", i++ + ": Message is ... " + message);
+            int status = user.getStatus();
+            Log.d("Logs: ", ": Operation is ... " + operation);
+            Log.d("Logs: ", ": Message is ... " + message);
+            if (status == 1) {
+                sendResult(operation, message);
+                user.setStatus(0);
+            }
         }
+    }
+
+    final static public String serverResult = "com.cs656chatapp.client.serverListener.REQUEST_PROCESSED";
+    final static public String serverMessage = "com.cs656chatapp.client.serverListener.serverMessage";
+    final static public String serverOperation = "com.cs656chatapp.client.serverListener.serverOperation";
+    public void sendResult(String operation, String message) {
+        Intent intent = new Intent(serverResult);
+        if (operation != null && message != null) {
+            intent.putExtra(serverOperation, operation);
+            intent.putExtra(serverMessage, message);
+        }
+        broadcaster.sendBroadcast(intent);
     }
 
     public void onDestroy() {
@@ -101,15 +113,4 @@ public class serverListener extends Service {
         }
         super.onDestroy();
     }
-
-    /*    private static Handler h = new Handler(){
-        @Override
-        public void handleMessage(Message msg){
-            if(msg.what == 0){
-                updateUI();
-            }else{
-                showErrorDialog();
-            }
-        }
-    };*/
 }

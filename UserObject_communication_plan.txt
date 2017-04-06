@@ -1,0 +1,21 @@
+Android App side -- UserObject settings
+
+operation.equals("Text Received") interceptMessage(message); //msg.split
+operation.equals("Pic Received") interceptMessage(message); //msg.split
+operation.equals("Voice Received") interceptMessage(message); //msg.split
+
+To send a logging on --> (username = $username & password = $password & checkCredentials() & notifyLoggedIn())
+
+When receiving a friend logged on --> addFriendToList (operation = "Friend Logged On" & message = "$friendName")
+
+To send a logging off --> (operation = "Log Out" & logOut() & notifyLoggedOut())
+
+When receiving a friend logged off --> removeFriendFromList (operation = "Friend Logged Off" & message = "$friendName")
+
+To send a friend request --> (operation = "Friend Request", message = "Send Friend Request,$strangerUsername")
+
+When receiving a friend request --> receiveFriendRequest (operation = "New Friend Request" & message = "$strangerUsername")
+
+To respond to a friend request --> (operation = "Friend Request" & message = "Respond to Friend Request,$strangerUsername,$result")
+
+When receiving the result to a friend request --> responseToFriendRequest (operation = "Response to Friend Request" & message = "$strangerUsername,$result)
