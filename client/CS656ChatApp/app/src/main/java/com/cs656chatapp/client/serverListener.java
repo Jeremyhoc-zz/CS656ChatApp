@@ -62,7 +62,7 @@ public class serverListener extends Service {
                 try {
                     UserObject user = (UserObject)IN.readObject();
                     user.setUsername(savedUser.getUsername());
-                    savedUser.setPassword(savedUser.getPassword());
+                    user.setPassword(savedUser.getPassword());
                     Log.d("Logs: ", "message in listenToServer = " + user.getMessage());
                     Thread t = new Thread(new performOperation(user));
                     t.start();

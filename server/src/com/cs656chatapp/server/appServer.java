@@ -60,7 +60,7 @@ class ThreadClientHandler extends Thread {
 			dbconn = new dbConnection();
 			userIn = checkCredentials(userIn);
 			int found = userIn.getStatus();
-			if (found==1)
+			if (found == 1)
 			{
 				System.out.println(clientUsername);
 				System.out.println(incoming);
@@ -73,9 +73,9 @@ class ThreadClientHandler extends Thread {
 					System.out.println("Waiting for a command from " + clientUsername);
 					userIn = (UserObject) IN.readObject();
 					String operation = userIn.getOperation();
-					System.out.printf("Request coming in from %s for: %s", clientUsername, userIn.getOperation());
+					System.out.printf("Request coming in from %s for: %s\n", clientUsername, userIn.getOperation());
 
-					UserObject userOut = new UserObject();;
+					UserObject userOut = new UserObject();
 					userOut.setUserID(userIn.getUserID());
 					userOut.setClientName(userIn.getName());
 					userOut.setUsername(userIn.getUsername());
@@ -198,14 +198,16 @@ class ThreadClientHandler extends Thread {
 		while(rs.next()) {
 			String friendsName = rs.getString("username");
 			Socket friend = findSocket(friendsName);
-			OutputStream os = friend.getOutputStream();
-	        ObjectOutputStream toFriendSocket = new ObjectOutputStream(os);
-	        UserObject notifyFriend = new UserObject();
-	        notifyFriend.setOperation("Friend Logged On");
-	        notifyFriend.setMessage(user.getUsername());
-	        notifyFriend.setStatus(1);
-	        toFriendSocket.writeObject(notifyFriend);
-	        toFriendSocket.flush();
+			if (friend != null) {
+				OutputStream os = friend.getOutputStream();
+		        ObjectOutputStream toFriendSocket = new ObjectOutputStream(os);
+		        UserObject notifyFriend = new UserObject();
+		        notifyFriend.setOperation("Friend Logged On");
+		        notifyFriend.setMessage(user.getUsername());
+		        notifyFriend.setStatus(1);
+		        toFriendSocket.writeObject(notifyFriend);
+		        toFriendSocket.flush();
+			}
 		}
 	}
 	
@@ -320,14 +322,16 @@ class ThreadClientHandler extends Thread {
 		while(rs.next()) {
 			String friendsName = rs.getString("username");
 			Socket friend = findSocket(friendsName);
-			OutputStream os = friend.getOutputStream();
-	        ObjectOutputStream toFriendSocket = new ObjectOutputStream(os);
-	        UserObject notifyFriend = new UserObject();
-	        notifyFriend.setOperation("Friend Logged Off");
-	        notifyFriend.setMessage(user.getUsername());
-	        notifyFriend.setStatus(1);
-	        toFriendSocket.writeObject(notifyFriend);
-	        toFriendSocket.flush();
+			if (friend != null) {
+				OutputStream os = friend.getOutputStream();
+		        ObjectOutputStream toFriendSocket = new ObjectOutputStream(os);
+		        UserObject notifyFriend = new UserObject();
+		        notifyFriend.setOperation("Friend Logged Off");
+		        notifyFriend.setMessage(user.getUsername());
+		        notifyFriend.setStatus(1);
+		        toFriendSocket.writeObject(notifyFriend);
+		        toFriendSocket.flush();
+			}
 		}
 	}
 	

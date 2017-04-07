@@ -56,17 +56,15 @@ public class MainActivity extends Activity implements
         getIntent().putExtra("userObject", user);
         //--------------End buddy list load-------------
 
-        System.out.println("Attempting to start service");
         Intent i = new Intent(MainActivity.this, serverListener.class);
         this.startService(i);
-        System.out.println("After starting service");
 
         receiver = new BroadcastReceiver() {
         @Override
             public void onReceive(Context context, Intent intent) {
                 String operation = intent.getStringExtra(serverListener.serverOperation);
                 String message = intent.getStringExtra(serverListener.serverMessage);
-                if (operation.equals("Text")) {
+                if (operation.equals("Set Message")) {
                     Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG)
                             .show();
                 } else if (operation.equals("Text Received")) {
