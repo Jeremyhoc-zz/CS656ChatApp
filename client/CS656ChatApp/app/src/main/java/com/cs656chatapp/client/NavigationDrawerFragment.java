@@ -22,7 +22,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 /**
  * Fragment used for managing interactions for and presentation of a navigation
@@ -284,15 +283,8 @@ public class NavigationDrawerFragment extends Fragment {
         if (item.getItemId() == R.id.action_example) {
             try {
                 UserObject user = new UserObject();
-                user.setOperation("Set Message");
-                user = serverConnection.sendToServer(user);
-                /*if (user.getStatus() == 1) {
-                    String msg = user.getMessage();
-                    Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT)
-                            .show();
-                    user.setStatus(0);
-                }*/
-
+                user.setOperation("Text");
+                serverConnection.sendToServer(user);
             } catch (Exception e) {
                 Log.d("Jet", e.getMessage());
             }
@@ -301,30 +293,18 @@ public class NavigationDrawerFragment extends Fragment {
 
         if (item.getItemId() == R.id.log_out) {
             try {
+                UserObject user = new UserObject();
                 user.setOperation("Log Out");
-                user = serverConnection.sendToServer(user);
+                serverConnection.sendToServer(user);
                 Intent intent = new Intent();
                 intent.setClass(getActivity(), LoginActivity.class);
                 startActivity(intent);
                 getActivity().finish();
-/*                if (user.getStatus() == 1) {
-                    String msg = user.getMessage();
-                    System.out.println("This is it: "+msg);
-                    Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT)
-                            .show();
-                    user.setStatus(0);
-                    Intent intent = new Intent();
-                    intent.setClass(getActivity(), LoginActivity.class);
-                    startActivity(intent);
-                    getActivity().finish();
-                }*/
-
             } catch (Exception e) {
                 Log.d("Jet", e.getMessage());
             }
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 

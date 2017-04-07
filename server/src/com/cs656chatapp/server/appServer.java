@@ -72,43 +72,44 @@ class ThreadClientHandler extends Thread {
 					//Maintain connection for requests and processing
 					System.out.println("Waiting for a command from " + clientUsername);
 					userIn = (UserObject) IN.readObject();
-					String operation = userIn.getOperation();
-					System.out.printf("Request coming in from %s for: %s\n", clientUsername, userIn.getOperation());
+					
+				    int userID = userIn.getUserID();
+				    String username = userIn.getUsername();
+				    String name = userIn.getName();
+				    String password = userIn.getPassword();
+				    int status = userIn.getStatus();
+				    String operation = userIn.getOperation();
+				    String message = userIn.getMessage();
+				    
+					System.out.printf("Request coming in from %s for: %s\n", clientUsername, operation);
 
 					UserObject userOut = new UserObject();
-					userOut.setUserID(userIn.getUserID());
-					userOut.setClientName(userIn.getName());
-					userOut.setUsername(userIn.getUsername());
-					userOut.setPassword(userIn.getPassword());
+					userOut.setUserID(userID);
+					userOut.setClientName(name);
+					userOut.setUsername(username);
+					userOut.setPassword(password);
 					
-					if (operation.equals("Set Message")) {
-						userIn.setMessage("Message 1: Example of userIn not working");
-						OUT.writeObject(userIn);
-						OUT.flush();
-						TimeUnit.SECONDS.sleep(1);
-						userIn.setMessage("This is Message 2");
-						TimeUnit.SECONDS.sleep(1);
-						userOut = setExample(userIn);
-						OUT.writeObject(userOut);
-						OUT.flush();						
+					if (operation.equals("Text")) {
+						userOut.setOperation("Text");
+						userOut = setExample(userOut, "UserOut 1");
 					}
 					else if (operation.equals("Send Text")) {
-						userOut = sendMessage(userIn);
+						userOut = sendMessage(userOut);
 					} 
 					else if (operation.equals("Send Pic")) {
-						userOut = sendPicture(userIn);
+						userOut = sendPicture(userOut);
 					} 
 					else if (operation.equals("Send Voice")) {
-						userOut = sendVoice(userIn);
+						userOut = sendVoice(userOut);
 					} 
 					else if (operation.equals("Friend Request")) {
-						userOut = friendRequestHandler(userIn);
+						userOut = friendRequestHandler(userOut, operation, message, username);
 					}
 					else if (operation.equals("Delete Friend")) {
-						userOut = deleteFriend(userIn);
+						userOut = deleteFriend(userOut);
 					}
 					else if (operation.equals("Log Out")) {
-						logOut(userIn);
+						logOut(userOut, username);
 						done = true;
 						continue;
 					} else {
@@ -119,7 +120,7 @@ class ThreadClientHandler extends Thread {
 					OUT.flush();
 					System.out.println("Response sent out.");
 				}
-				System.out.printf("%s has logged out", clientUsername);
+				System.out.printf("%s has logged out\n", clientUsername);
 			} else if(found == 9){
 				System.out.println("User already exists so status = " + userIn.getStatus());
 				clients.put(clientUsername, incoming);
@@ -223,9 +224,9 @@ class ThreadClientHandler extends Thread {
 		return user;
 	}
 	
-	public UserObject setExample(UserObject user) {
+	public UserObject setExample(UserObject user, String message) {
 		//Test method!
-		user.setMessage("This is Message 3");
+		user.setMessage(message);
 		user.setStatus(1);
 		return user;
 	}
@@ -266,11 +267,10 @@ class ThreadClientHandler extends Thread {
 		return user;
 	}
 
-	public UserObject friendRequestHandler(UserObject user) throws ClassNotFoundException, IOException, SQLException {
-		String clientUsername = user.getUsername();
-		String message = user.getMessage();
+	public UserObject friendRequestHandler(UserObject user, String operation, String message, String clientUsername) throws ClassNotFoundException, IOException, SQLException {
+		message = user.getMessage();
 		String[] msgSplit = message.split(",");
-		String operation = msgSplit[0];
+		operation = msgSplit[0];
 		if (operation.equals("Send Friend Request")) {
 			String strangerName = msgSplit[1];
 			Socket stranger = findSocket(strangerName);
@@ -308,16 +308,16 @@ class ThreadClientHandler extends Thread {
 		return user;
 	}
 	
-	public UserObject logOut(UserObject user) throws IOException, SQLException {
+	public UserObject logOut(UserObject user, String username) throws IOException, SQLException {
 		//Broadcast to user's friends this client is logging off
-		clients.remove(user.getUsername());
-		notifyLoggedOut(user);
+		clients.remove(username);
+		notifyLoggedOut(user, username);
 		user.setMessage("Log out successful.");
 		user.setStatus(1);
 		return user;
 	}
 	
-	public void notifyLoggedOut(UserObject user) throws IOException, SQLException {
+	public void notifyLoggedOut(UserObject user, String username) throws IOException, SQLException {
 		rs = dbconn.executeSQL("select username from Users where user_id IN (select friend_id from friends where user_id="+user.getUserID()+");");
 		while(rs.next()) {
 			String friendsName = rs.getString("username");
@@ -327,7 +327,7 @@ class ThreadClientHandler extends Thread {
 		        ObjectOutputStream toFriendSocket = new ObjectOutputStream(os);
 		        UserObject notifyFriend = new UserObject();
 		        notifyFriend.setOperation("Friend Logged Off");
-		        notifyFriend.setMessage(user.getUsername());
+		        notifyFriend.setMessage(username);
 		        notifyFriend.setStatus(1);
 		        toFriendSocket.writeObject(notifyFriend);
 		        toFriendSocket.flush();

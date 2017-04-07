@@ -64,7 +64,7 @@ public class MainActivity extends Activity implements
             public void onReceive(Context context, Intent intent) {
                 String operation = intent.getStringExtra(serverListener.serverOperation);
                 String message = intent.getStringExtra(serverListener.serverMessage);
-                if (operation.equals("Set Message")) {
+                if (operation.equals("Text")) {
                     Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG)
                             .show();
                 } else if (operation.equals("Text Received")) {
