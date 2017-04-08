@@ -10,6 +10,7 @@
     <string name="title_section1">Buddy List</string>
     <string name="title_section2">Recent Chats</string>
     <string name="title_section3">My Profile</string>
+    <string name="title_section4">Add/Remove Friends</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
@@ -22,5 +23,6 @@
     <string name="confirm_password">confirm password</string>
     <string name="register">REGISTER</string>
     <string name="go_back">Go Back</string>
+
 
 </resources>

@@ -6,7 +6,9 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.ListActivity;
 import android.content.BroadcastReceiver;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
@@ -14,6 +16,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +30,7 @@ import android.content.IntentFilter;
 public class MainActivity extends Activity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks  {
 
+    ListView listView;
     Intent intent;
     UserObject user;
     String buddy_list;
@@ -45,15 +51,17 @@ public class MainActivity extends Activity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+       setContentView(R.layout.activity_main);
 
         //--------------Get userObject and load buddy list-------------Get same UserObject from previous intent to load the buddy list.
         intent = getIntent();
+
         user = (UserObject)intent.getSerializableExtra("userObject");
         buddy_list = user.getMessage();
-        textView = (TextView)findViewById(R.id.buddy_1);
-        textView.setText(buddy_list);
         getIntent().putExtra("userObject", user);
+
+        loadBuddyList(buddy_list.split(","));
+
         //--------------End buddy list load-------------
 
         Intent i = new Intent(MainActivity.this, serverListener.class);
@@ -108,6 +116,35 @@ public class MainActivity extends Activity implements
         super.onStop();
     }
 
+    /*   //Code to make a listview item bold
+
+    @Override
+
+    public View adapter.getView(int position, View convertView, ViewGroup parent){
+       // View returnedView = super.getView;
+        View returnedView = super.getView(position, convertView, parent);
+
+        TextView text = (TextView)returnedView.findViewById(R.id.text);
+        text.setTypeface(null, Typeface.BOLD);
+    }
+    */
+
+    protected void loadBuddyList(String[] buddies){
+        listView = (ListView)findViewById(R.id.buddyList);
+
+        ArrayAdapter<String>adapter = new ArrayAdapter<String>(this,R.layout.bud_list_item,R.id.bud_text1,buddies);
+        listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                int itemPosition = position;
+                String itemValue = (String) listView.getItemAtPosition(position);
+                Toast.makeText(getApplicationContext(),"Position: "+itemPosition+" ListItem: "+itemValue,Toast.LENGTH_SHORT).show();
+
+            }
+        });
+    }
     protected void interceptText(String friend) {
         String[] msgSplit = friend.split(",");
         String friendName = msgSplit[0];
@@ -177,6 +214,8 @@ public class MainActivity extends Activity implements
             case 3:
                 mTitle = getString(R.string.title_section3);
                 break;
+            case 4:
+                mTitle = getString(R.string.title_section4);
         }
     }
 
