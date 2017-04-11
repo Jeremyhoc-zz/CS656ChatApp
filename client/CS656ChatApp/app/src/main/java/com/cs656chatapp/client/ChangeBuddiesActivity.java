@@ -27,7 +27,7 @@ public class ChangeBuddiesActivity extends AppCompatActivity {
     String buddy_list;
     Intent intent;
     EditText FindUsername;
-    String findUsername, requests, recipients;
+    String findUsername="",findUsernameOld, requests, recipients;
     Intent i;
     AlertDialog.Builder builder;
     CharSequence choices[] = new CharSequence[]{"Delete","Keep"};
@@ -48,6 +48,28 @@ public class ChangeBuddiesActivity extends AppCompatActivity {
 
         System.out.println("I have these buddies and my name is "+user.getUsername()+"\n"+buddy_list+"\n"+requests);
 
+        //   i = new Intent(ChangeBuddiesActivity.this, serverListener.class);
+        //  this.startService(i);
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String operation = intent.getStringExtra(serverListener.serverOperation);
+                String message = intent.getStringExtra(serverListener.serverMessage);
+                user.setMessage(message);
+                if (operation.equals("User Does Not Exist")) {
+                    Toast.makeText(getApplicationContext(),user.getMessage(),Toast.LENGTH_LONG).show();
+                }else if (operation.equals("Take List")) {
+                    Toast.makeText(getApplicationContext(),"List Updated",Toast.LENGTH_LONG).show();
+                    recipients = user.getMessage();
+                    System.out.println("Recipients recieved: "+recipients);
+                    if(!user.getMessage().equals("nobody")) loadSentList(recipients.split(","));
+                }else if (operation.equals("Sent Request Deleted")) {
+                    Toast.makeText(getApplicationContext(),"Request Deleted",Toast.LENGTH_SHORT).show();
+                    getSentRequests();
+                }
+            }
+        };
+
         getSentRequests();
 
         findButton = (Button) findViewById(R.id.friend_request_button1);
@@ -65,6 +87,9 @@ public class ChangeBuddiesActivity extends AppCompatActivity {
                 else if(requests.contains(findUsername)){
                     Toast.makeText(getApplicationContext(),findUsername+" has already sent you a request.",Toast.LENGTH_SHORT).show();
                 }
+                else if(recipients.contains(findUsername)){
+                    Toast.makeText(getApplicationContext(),"Friend request to "+findUsername+" already sent!",Toast.LENGTH_LONG).show();
+                }
                 else{
                     user.setOperation("Request Friend");
                     user.setMessage(findUsername);
@@ -73,32 +98,6 @@ public class ChangeBuddiesActivity extends AppCompatActivity {
             }
         });
 
-
-
-
-      //  i = new Intent(ChangeBuddiesActivity.this, serverListener.class);
-      //  this.startService(i);
-       receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String operation = intent.getStringExtra(serverListener.serverOperation);
-                String message = intent.getStringExtra(serverListener.serverMessage);
-                user.setMessage(message);
-                if (operation.equals("User Does Not Exist")) {
-                    Toast.makeText(getApplicationContext(),user.getMessage(),Toast.LENGTH_LONG).show();
-                }else if (operation.equals("Take Sent List")) {
-                    recipients = user.getMessage();
-                    System.out.println("Recipients recieved: "+recipients);
-                    if(!user.getMessage().equals("nobody")) loadSentList(recipients.split(","));
-                }else if (operation.equals("Refresh Requests")) {
-                    Toast.makeText(getApplicationContext(),"Request Sent to "+findUsername,Toast.LENGTH_LONG).show();
-                    getSentRequests();
-                }else if (operation.equals("Sent Request Deleted")) {
-                    Toast.makeText(getApplicationContext(),"Request Deleted",Toast.LENGTH_SHORT).show();
-                    getSentRequests();
-                }
-            }
-        };
         newButton = (Button) findViewById(R.id.go_back1);
         newButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -112,8 +111,6 @@ public class ChangeBuddiesActivity extends AppCompatActivity {
         });
 
         builder = new AlertDialog.Builder(this);
-        builder.setTitle("Delete this recipient?");
-
     }
 
     @Override
@@ -135,7 +132,7 @@ public class ChangeBuddiesActivity extends AppCompatActivity {
         user.setOperation("Delete Request");
         user = serverConnection.sendToServer(user);
     }
-    protected void onClick(final String val, int pos){
+    protected void onClick(final String val){
 
         builder.setTitle("Delete request sent to "+val+"?");
         builder.setItems(choices,new DialogInterface.OnClickListener(){
@@ -159,6 +156,7 @@ public class ChangeBuddiesActivity extends AppCompatActivity {
     }
     protected void loadSentList(String[] str){
 
+        System.out.println("This is the first on list: "+str[0]);
         listView = (ListView)findViewById(R.id.senderList);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,R.layout.request_list_item,R.id.req_text1,str);
@@ -169,7 +167,7 @@ public class ChangeBuddiesActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 int itemPosition = position;
                 String itemValue = (String) listView.getItemAtPosition(position);
-                onClick(itemValue,itemPosition);
+                onClick(itemValue);
             }
         });
     }

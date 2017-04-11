@@ -120,10 +120,14 @@ class ThreadClientHandler extends Thread {
 					else if (operation.equals("Delete Request")) {
 						userOut = deleteRequest(userOut);
 					}
+					else if (operation.equals("Answer Request")) {
+						userOut = answerRequest(userOut);
+					}
 					else if (operation.equals("Get Request List")) {
 						userOut = getRequests(userOut);
 					}
 					else if (operation.equals("Get Sent List")) {
+						userOut.setMessage("");
 						userOut = getSentRequests(userOut);
 					}
 					else if (operation.equals("Delete Friend")) {
@@ -302,7 +306,7 @@ class ThreadClientHandler extends Thread {
 			
 		}
 		if(receiverNames.isEmpty()) receiverNames="nobody";
-		user.setOperation("Take Sent List");
+		user.setOperation("Take List");
 		user.setMessage(receiverNames);
 		user.setStatus(1);
 		return user;
@@ -342,12 +346,12 @@ class ThreadClientHandler extends Thread {
 		}
 		
 		//Add new entry in friendRequests table
-		System.out.println("Should not come here");
 		boolean ret=dbconn.executeUpdate("insert into friendRequests values("+user.getUserID()+","+friendID+");");
 		if(!ret) System.out.println("Something wrong adding friend");
 		else System.out.println("Waiting for friend to accept");
-		user.setOperation("Refresh Requests");
-		user.setStatus(1);
+		
+		// Get sent list 
+		user = getSentRequests(user);
 		//function to check if friend is online
 		return user;		
 	}
@@ -402,6 +406,43 @@ class ThreadClientHandler extends Thread {
 			user.setStatus(1);
 		}
 		else System.out.println("Something wrong deleting Friend Request");
+		return user;
+	}
+	
+	public UserObject answerRequest (UserObject user) throws/*ClassNotFoundException, IOException, */SQLException{
+		String[] answer = user.getMessage().split(",");	
+		int id=-1;
+		//Get request sender ID
+		rs = dbconn.executeSQL("select user_id from users where username=\""+ answer[1] +"\";");
+		while(rs.next())
+		{
+			id = rs.getInt("user_id");
+		}
+		
+		if(answer[0].equals("Accept")){
+			// Add to Friends table
+			boolean ret=dbconn.executeUpdate("insert into friends values("+user.getUserID()+", "+id+");");
+			if(ret)	System.out.println("Friend Added Successfully");
+			else System.out.println("Something wrong adding Friend");
+		}
+		// Delete from friendRequests table
+		boolean ret=dbconn.executeUpdate("delete from friendRequests where receiver_id="+user.getUserID()+" AND sender_id="+id+";");
+		if(ret)	System.out.println("Request Deleted Successfully");
+		else System.out.println("Something wrong deleting Request");
+			
+		//Get remaining requests
+		rs = dbconn.executeSQL("select username from users where user_id IN "
+				+ "(select sender_id from friendRequests where receiver_id="+user.getUserID()+");");
+		String senderNames="";
+		while(rs.next())
+		{
+			senderNames+= rs.getString("username") + ",";;	
+		}
+		if(senderNames.isEmpty()) senderNames="none";
+		
+		user.setMessage(senderNames);
+		user.setOperation("Request List");
+		user.setStatus(1);
 		return user;
 	}
 	
