@@ -6,9 +6,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.ListActivity;
 import android.content.BroadcastReceiver;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
@@ -16,16 +14,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.content.Context;
 import android.content.Intent;
-import android.content.BroadcastReceiver;
 import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 import android.content.IntentFilter;
+
+import static java.security.AccessController.getContext;
 
 public class MainActivity extends Activity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks  {
@@ -33,13 +35,16 @@ public class MainActivity extends Activity implements
     ListView listView;
     Intent intent;
     UserObject user;
-    String buddy_list;
-    TextView textView;
+    String buddy_list, requests;
+    String[] globalBuddies;
+    Intent i;
+
     /**
      * Fragment managing the behaviors, interactions and presentation of the
      * navigation drawer.
      */
     private NavigationDrawerFragment mNavigationDrawerFragment;
+    private Fragment changeBuddiesFragment;
 
     /**
      * Used to store the last screen title. For use in
@@ -53,25 +58,23 @@ public class MainActivity extends Activity implements
         super.onCreate(savedInstanceState);
        setContentView(R.layout.activity_main);
 
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         //--------------Get userObject and load buddy list-------------Get same UserObject from previous intent to load the buddy list.
         intent = getIntent();
-
-        user = (UserObject)intent.getSerializableExtra("userObject");
-        buddy_list = user.getMessage();
-        getIntent().putExtra("userObject", user);
-
-        loadBuddyList(buddy_list.split(","));
-
+        user = (UserObject)intent.getSerializableExtra("userObject0");
+        intent.putExtra("userObject", user);
+        getBuddyList();
+        intent.putExtra("Requests",requests);
         //--------------End buddy list load-------------
 
-        Intent i = new Intent(MainActivity.this, serverListener.class);
+        i = new Intent(MainActivity.this, serverListener.class);
         this.startService(i);
-
         receiver = new BroadcastReceiver() {
         @Override
             public void onReceive(Context context, Intent intent) {
                 String operation = intent.getStringExtra(serverListener.serverOperation);
                 String message = intent.getStringExtra(serverListener.serverMessage);
+                user.setMessage(message);
                 if (operation.equals("Text")) {
                     Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG)
                             .show();
@@ -89,6 +92,23 @@ public class MainActivity extends Activity implements
                     receiveFriendRequest(message);
                 } else if (operation.equals("Response to Friend Request")) {
                     responseToFriendRequest(message);
+                } else if (operation.equals("Take Buddy List")) {
+                    String[] holder = user.getMessage().split("-");
+                    System.out.println("The Buddy List is Recieved");
+                    buddy_list = holder[1];
+                    requests = holder[0];
+                    System.out.println("Buddy List recieved: "+buddy_list);
+                    if(!buddy_list.isEmpty()) loadBuddyList(buddy_list.split(","));
+                    intent.putExtra("Requests",requests);
+                    System.out.println("Requests recieved: "+requests);
+                    if(!requests.equals("none"))
+                        Toast.makeText(MainActivity.this, "You have requests!", Toast.LENGTH_LONG).show();
+                }else if (operation.equals("Take Request List")) {
+                    requests = user.getMessage();
+                    intent.putExtra("Requests",requests);
+                    System.out.println("Requests recieved: "+requests);
+                    if(!requests.equals("none"))
+                        Toast.makeText(MainActivity.this, "You have requests!", Toast.LENGTH_LONG).show();
                 }
             }
         };
@@ -100,6 +120,9 @@ public class MainActivity extends Activity implements
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+
+
+
     }
 
     @Override
@@ -129,10 +152,17 @@ public class MainActivity extends Activity implements
     }
     */
 
+    protected void getBuddyList(){
+        user.setOperation("Get Buddy List");
+        user = serverConnection.sendToServer(user);
+    }
+
     protected void loadBuddyList(String[] buddies){
+
+        globalBuddies = buddies;
         listView = (ListView)findViewById(R.id.buddyList);
 
-        ArrayAdapter<String>adapter = new ArrayAdapter<String>(this,R.layout.bud_list_item,R.id.bud_text1,buddies);
+        ArrayAdapter<String>adapter = new ArrayAdapter<String>(this,R.layout.buddy_list_item,R.id.bud_text1,buddies);
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -145,6 +175,13 @@ public class MainActivity extends Activity implements
             }
         });
     }
+
+    protected void getRequests(){
+
+        user.setOperation("Get Request List");
+        user = serverConnection.sendToServer(user);
+    }
+
     protected void interceptText(String friend) {
         String[] msgSplit = friend.split(",");
         String friendName = msgSplit[0];
@@ -201,6 +238,31 @@ public class MainActivity extends Activity implements
                 .beginTransaction()
                 .replace(R.id.container,
                         PlaceholderFragment.newInstance(position + 1)).commit();
+        if(position == 1){
+
+            Intent intent = new Intent();
+            intent.setClass(MainActivity.this, RequestsActivity.class);
+            intent.putExtra("userObject1", user);
+            intent.putExtra("Requests1", requests);
+
+            startActivity(intent);
+            MainActivity.this.finish();
+
+        }
+        if(position == 3){
+
+            //setContentView(R.layout.activity_recent_chats);
+
+            Intent intent = new Intent();
+            intent.setClass(MainActivity.this, ChangeBuddiesActivity.class);
+            intent.putExtra("userObject1", user);
+            intent.putExtra("buddyList1", buddy_list);
+            intent.putExtra("Requests1", requests);
+
+            startActivity(intent);
+            MainActivity.this.finish();
+
+        }
     }
 
     public void onSectionAttached(int number) {
@@ -295,6 +357,7 @@ public class MainActivity extends Activity implements
             ((MainActivity) activity).onSectionAttached(getArguments().getInt(
                     ARG_SECTION_NUMBER));
         }
+
     }
 
 }

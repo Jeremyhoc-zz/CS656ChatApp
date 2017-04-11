@@ -4,6 +4,7 @@ import com.cs656chatapp.common.UserObject;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -29,12 +30,14 @@ public class serverListener extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
+    final Handler handler = new Handler();;
 
     @Override
     public void onCreate() {
         Log.d("Logs: ", "Creating");
         super.onCreate();
         broadcaster = LocalBroadcastManager.getInstance(this);
+
     }
 
     @Override
@@ -107,6 +110,7 @@ public class serverListener extends Service {
     public void onDestroy() {
         try {
             Toast.makeText(this, "Closing down service", Toast.LENGTH_SHORT).show();
+            Thread.sleep(1000);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -17,6 +17,6 @@
         android:id="@+id/bud_text1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:textSize="28sp" />
+        android:textSize="20sp" />
 
 </LinearLayout>

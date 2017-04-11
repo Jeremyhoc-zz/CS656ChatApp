@@ -58,7 +58,7 @@ class ThreadClientHandler extends Thread {
 			String clientUsername = userIn.getUsername();
 			System.out.println(incoming.getLocalAddress().getHostAddress() + "(" + clientUsername + ") is attempting to log in.");
 			dbconn = new dbConnection();
-			userIn = checkCredentials(userIn);
+			userIn = checkCredentials(userIn);			
 			int found = userIn.getStatus();
 			if (found == 1)
 			{
@@ -71,8 +71,10 @@ class ThreadClientHandler extends Thread {
 				while(!done) {
 					//Maintain connection for requests and processing
 					System.out.println("Waiting for a command from " + clientUsername);
+				
 					userIn = (UserObject) IN.readObject();
 					
+			
 				    int userID = userIn.getUserID();
 				    String username = userIn.getUsername();
 				    String name = userIn.getName();
@@ -88,10 +90,17 @@ class ThreadClientHandler extends Thread {
 					userOut.setClientName(name);
 					userOut.setUsername(username);
 					userOut.setPassword(password);
+					userOut.setMessage(message);
+					
 					
 					if (operation.equals("Text")) {
 						userOut.setOperation("Text");
 						userOut = setExample(userOut, "UserOut 1");
+					}
+					else if (operation.equals("Get Buddy List")) {
+						userOut = getRequests(userOut);
+						userOut = loadBuddyList(userOut);
+						System.out.println("\nBD &R: "+userOut.getMessage());
 					}
 					else if (operation.equals("Send Text")) {
 						userOut = sendMessage(userOut);
@@ -105,6 +114,18 @@ class ThreadClientHandler extends Thread {
 					else if (operation.equals("Friend Request")) {
 						userOut = friendRequestHandler(userOut, operation, message, username);
 					}
+					else if (operation.equals("Request Friend")) {
+						userOut = friendReqsHandler(userOut);
+					}
+					else if (operation.equals("Delete Request")) {
+						userOut = deleteRequest(userOut);
+					}
+					else if (operation.equals("Get Request List")) {
+						userOut = getRequests(userOut);
+					}
+					else if (operation.equals("Get Sent List")) {
+						userOut = getSentRequests(userOut);
+					}
 					else if (operation.equals("Delete Friend")) {
 						userOut = deleteFriend(userOut);
 					}
@@ -116,8 +137,10 @@ class ThreadClientHandler extends Thread {
 						System.out.printf("Empty object came from %s", clientUsername);
 					}
 					
-					OUT.writeObject(userOut);
+					//OUT.writeObject(userOut);
+		            OUT.writeUnshared(userOut);
 					OUT.flush();
+					OUT.reset();
 					System.out.println("Response sent out.");
 				}
 				System.out.printf("%s has logged out\n", clientUsername);
@@ -187,7 +210,7 @@ class ThreadClientHandler extends Thread {
 	
 	public UserObject logIn(UserObject user) throws ClassNotFoundException, IOException, SQLException {
 		clients.put(user.getUsername(), incoming);
-		user = loadBuddyList(user);
+	//	user = loadBuddyList(user);
 		
 		notifyLoggedIn(user);
 		user.setStatus(1);
@@ -213,14 +236,16 @@ class ThreadClientHandler extends Thread {
 	}
 	
 	public UserObject loadBuddyList(UserObject user) throws ClassNotFoundException, IOException, SQLException {
-		//Grab user ID's friends in DB that are online, return to client for loading
+		//Grab user ID's friends in DB, return to client for loading
 		rs = dbconn.executeSQL("select user_id, name, username from users where user_id IN (select friend_id from friends where user_id="+user.getUserID()+") OR user_id IN (select user_id from friends where friend_id="+user.getUserID()+");");
 		String friends="";
 		while(rs.next())
 		{
 			friends += rs.getString("username") + ",";
 		}
-		user.setMessage(friends);
+		user.setMessage(user.getMessage()+"-"+friends);
+		user.setOperation("Take Buddy List");
+		user.setStatus(1);
 		return user;
 	}
 	
@@ -266,6 +291,66 @@ class ThreadClientHandler extends Thread {
 		user.setStatus(1);
 		return user;
 	}
+	
+	public UserObject getSentRequests(UserObject user) throws /*ClassNotFoundException, IOException, */SQLException{
+		rs = dbconn.executeSQL("select username from users where user_id IN "
+				+ "(select receiver_id from friendRequests where sender_id="+user.getUserID()+");");
+		String receiverNames="";
+		while(rs.next())
+		{
+			receiverNames+= rs.getString("username") + ",";;
+			
+		}
+		if(receiverNames.isEmpty()) receiverNames="nobody";
+		user.setOperation("Take Sent List");
+		user.setMessage(receiverNames);
+		user.setStatus(1);
+		return user;
+	}
+	
+	public UserObject getRequests(UserObject user) throws /*ClassNotFoundException, IOException, */SQLException{
+		rs = dbconn.executeSQL("select username from users where user_id IN "
+				+ "(select sender_id from friendRequests where receiver_id="+user.getUserID()+");");
+		String senderNames="";
+		while(rs.next())
+		{
+			senderNames+= rs.getString("username") + ",";;
+			
+		}
+		if(senderNames.isEmpty()) senderNames="none";
+		user.setOperation("Take Request List");
+		user.setMessage(senderNames);
+		user.setStatus(1);
+		return user;
+	}
+	
+	public UserObject friendReqsHandler(UserObject user) throws /*ClassNotFoundException, IOException, */SQLException{
+		// Check if username exists
+		rs = dbconn.executeSQL("select username,user_ID from users where username=\""+user.getMessage()+"\";");
+		String friendUserName="";
+		int friendID=-1;
+		while(rs.next())
+		{
+			friendUserName = rs.getString("username");
+			friendID=rs.getInt("user_id");
+		}
+		if(friendUserName.equals("")){
+			user.setOperation("User Does Not Exist");
+			user.setMessage("User "+user.getMessage()+" does not exist");
+			user.setStatus(1);
+			return user;
+		}
+		
+		//Add new entry in friendRequests table
+		System.out.println("Should not come here");
+		boolean ret=dbconn.executeUpdate("insert into friendRequests values("+user.getUserID()+","+friendID+");");
+		if(!ret) System.out.println("Something wrong adding friend");
+		else System.out.println("Waiting for friend to accept");
+		user.setOperation("Refresh Requests");
+		user.setStatus(1);
+		//function to check if friend is online
+		return user;		
+	}
 
 	public UserObject friendRequestHandler(UserObject user, String operation, String message, String clientUsername) throws ClassNotFoundException, IOException, SQLException {
 		message = user.getMessage();
@@ -298,6 +383,25 @@ class ThreadClientHandler extends Thread {
 	        //TODO: Update friend request results in database friendRequest table!
 		}
 		user.setStatus(1);
+		return user;
+	}
+	
+	public UserObject deleteRequest(UserObject user) throws/*ClassNotFoundException, IOException, */SQLException{
+		rs = dbconn.executeSQL("select user_id from users where username=\""+user.getMessage()+"\";");
+		int id=-1;
+		while(rs.next())
+		{
+			id = rs.getInt("user_id");
+				
+		}
+		System.out.println("This is the id deleted for request sent: "+id);
+		boolean ret=dbconn.executeUpdate("delete from friendRequests where sender_id="+user.getUserID()+" and receiver_id="+id+";");
+		if(ret){
+			System.out.println("Friend Request Deleted Successfully");
+			user.setOperation("Sent Request Deleted");
+			user.setStatus(1);
+		}
+		else System.out.println("Something wrong deleting Friend Request");
 		return user;
 	}
 	

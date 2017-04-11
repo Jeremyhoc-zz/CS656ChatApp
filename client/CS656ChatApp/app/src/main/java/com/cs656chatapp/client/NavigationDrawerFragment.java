@@ -3,7 +3,9 @@ import com.cs656chatapp.common.UserObject;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -62,8 +64,9 @@ public class NavigationDrawerFragment extends Fragment {
     private int mCurrentSelectedPosition = 0;
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
-
-    UserObject user;
+    Intent i;
+    String requests;
+    UserObject user,user1;
 
     public NavigationDrawerFragment() {
 
@@ -73,8 +76,8 @@ public class NavigationDrawerFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent i = getActivity().getIntent();
-        user = (UserObject) i.getSerializableExtra("userObject");
+        i = getActivity().getIntent();
+        user = (UserObject) i.getSerializableExtra("userObject0");
 
         // Read in the flag indicating whether or not the user has demonstrated
         // awareness of the
@@ -329,7 +332,7 @@ public class NavigationDrawerFragment extends Fragment {
      * Callbacks interface that all activities using this fragment must
      * implement.
      */
-    public static interface NavigationDrawerCallbacks {
+    public interface NavigationDrawerCallbacks {
         /**
          * Called when an item in the navigation drawer is selected.
          */

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="3dip"
+    android:background="@drawable/customborder">
+
+    <ImageView
+        android:id="@+id/bud_icon"
+        android:scaleType="fitXY"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="fill_parent"
+        android:layout_marginRight="12dip"
+        android:src="@drawable/user_icon" />
+    <TextView
+        android:id="@+id/req_text1"
+        android:layout_width="0dp"
+        android:layout_weight="9"
+        android:layout_height="wrap_content"
+        android:textSize="25sp" />
+
+</LinearLayout>
