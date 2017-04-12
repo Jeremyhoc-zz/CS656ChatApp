@@ -42,12 +42,6 @@
             android:name=".serverListener"
             android:stopWithTask="true" />
 
-        <activity
-            android:name=".ChangeBuddiesActivity"
-            android:label="@string/searchFriend"
-            android:theme="@style/Theme.AppCompat" />
-        <activity android:name=".RequestsActivity"
-            android:theme="@style/Theme.AppCompat"/>
     </application>
 
 </manifest>

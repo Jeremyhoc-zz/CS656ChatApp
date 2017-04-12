@@ -24,14 +24,11 @@
     <string name="register">REGISTER</string>
     <string name="go_back">Go Back</string>
     <string name="find">Find</string>
+    <string name="search">Search</string>
+    <string name="unfriend">Unfriend</string>
     <string name="searchFriend">Friends</string>
     <string name="enterFriend">Enter a Username to search for a friend:</string>
     <string name="Reqs">These are your Friend Requests:</string>
-
-
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
 </resources>

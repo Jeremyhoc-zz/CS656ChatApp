@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000"
-    tools:context="com.cs656chatapp.client.RequestsActivity">
+    tools:context="com.cs656chatapp.client.RequestsFragment">
 
     <TextView
         android:id="@+id/req_textView"
@@ -21,12 +21,12 @@
     <ListView
         android:id="@+id/requestList"
         android:layout_width="match_parent"
-        android:layout_height="250dp"
+        android:layout_height="370dp"
         android:background="@drawable/customborder"
         android:layout_alignLeft="@+id/req_textView"
         android:layout_alignRight="@+id/req_textView"
         android:layout_below="@+id/req_textView"/>
-
+<!--
     <Button
         android:id="@+id/go_back2"
         android:layout_width="wrap_content"
@@ -40,6 +40,6 @@
         android:text="@string/go_back"
         android:textColor="@color/White"
         android:textSize="15sp" />
-
+-->
 
 </RelativeLayout>

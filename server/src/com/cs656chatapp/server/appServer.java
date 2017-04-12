@@ -98,9 +98,7 @@ class ThreadClientHandler extends Thread {
 						userOut = setExample(userOut, "UserOut 1");
 					}
 					else if (operation.equals("Get Buddy List")) {
-						userOut = getRequests(userOut);
 						userOut = loadBuddyList(userOut);
-						System.out.println("\nBD &R: "+userOut.getMessage());
 					}
 					else if (operation.equals("Send Text")) {
 						userOut = sendMessage(userOut);
@@ -214,8 +212,12 @@ class ThreadClientHandler extends Thread {
 	
 	public UserObject logIn(UserObject user) throws ClassNotFoundException, IOException, SQLException {
 		clients.put(user.getUsername(), incoming);
-	//	user = loadBuddyList(user);
-		
+		String tempBuddies;
+		user = loadBuddyList(user);
+		tempBuddies=user.getMessage();
+		user = getRequests(user);
+		user.setMessage(user.getMessage()+"-"+tempBuddies);
+		user.setOperation("Login Info Attached");
 		notifyLoggedIn(user);
 		user.setStatus(1);
 		return user;
@@ -247,7 +249,7 @@ class ThreadClientHandler extends Thread {
 		{
 			friends += rs.getString("username") + ",";
 		}
-		user.setMessage(user.getMessage()+"-"+friends);
+		user.setMessage(friends);
 		user.setOperation("Take Buddy List");
 		user.setStatus(1);
 		return user;
@@ -441,15 +443,26 @@ class ThreadClientHandler extends Thread {
 		if(senderNames.isEmpty()) senderNames="none";
 		
 		user.setMessage(senderNames);
-		user.setOperation("Request List");
+		user.setOperation("Take Request List");
 		user.setStatus(1);
 		return user;
 	}
 	
-	public UserObject deleteFriend(UserObject user) {
+	public UserObject deleteFriend(UserObject user)  throws ClassNotFoundException, IOException,SQLException {
 		//Disable an old friendship in the database friendshipHistory table
-		String message = user.getMessage();
-		user.setStatus(1);
+		//1-Get friend's ID from database
+		rs = dbconn.executeSQL("select user_id from users where username=\""+user.getUsername()+"\";");
+		int friendID=-1;
+		while(rs.next())
+		{
+			friendID= rs.getInt("user_id");	
+		}
+		//2-Delete from friends table
+		boolean ret=dbconn.executeUpdate("delete from friends where user_id="+user.getUserID()+" and friend_id="+friendID+" OR user_id="+friendID
+				+" and friend_id="+user.getUserID()+";");
+		if(ret)	System.out.println("Friend Removed Successfully");
+		else System.out.println("Something wrong adding Friend");
+		user=loadBuddyList(user);
 		return user;
 	}
 	
