@@ -54,8 +54,12 @@ public class MainActivity extends Activity implements
         //--------------Get userObject and load buddy list-------------Get same UserObject from previous intent to load the buddy list.
         intent = getIntent();
         user = (UserObject)intent.getSerializableExtra("userObject0");
+        buddy_list = intent.getStringExtra("Buddies0");
+        requests = intent.getStringExtra("Requests0");
+        System.out.println("From MAINACTIVITY:\nBuddies= "+buddy_list+"\nRequests= "+requests);
         intent.putExtra("userObject", user);
         intent.putExtra("Requests",requests);
+        intent.putExtra("Buddies",buddy_list);
 
         //getBuddyList();
         //--------------End buddy list load-------------
@@ -86,16 +90,9 @@ public class MainActivity extends Activity implements
                 } else if (operation.equals("Response to Friend Request")) {
                     responseToFriendRequest(message);
                 } else if (operation.equals("Take Buddy List")) {
-                    String[] holder = user.getMessage().split("-");
-                    System.out.println("The Buddy List is Recieved");
-                    buddy_list = holder[1];
-                    requests = holder[0];
+                    buddy_list = user.getMessage();
                     System.out.println("Buddy List recieved: "+buddy_list);
                    // if(!buddy_list.isEmpty()) //loadBuddyList(buddy_list.split(","));
-                    intent.putExtra("Requests",requests);
-                    System.out.println("Requests recieved: "+requests);
-                    if(!requests.equals("none"))
-                        Toast.makeText(MainActivity.this, "You have requests!", Toast.LENGTH_LONG).show();
                 }else if (operation.equals("Take Request List")) {
                    // requests = user.getMessage();
                    // intent.putExtra("Requests",requests);

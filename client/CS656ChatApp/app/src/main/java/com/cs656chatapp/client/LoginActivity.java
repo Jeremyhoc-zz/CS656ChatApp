@@ -20,6 +20,8 @@ public class LoginActivity extends Activity {
     EditText Eusername, Epassword;
     String username, password;
     Thread tSend;
+    UserObject user;
+    Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +63,7 @@ public class LoginActivity extends Activity {
         public void run() {
             String up = username + " " + password;
             System.out.println(up);
-            UserObject user = new UserObject();
+            user = new UserObject();
             user.setUsername(username);
             user.setPassword(password);
             user = serverConnection.connect(user);
@@ -69,9 +71,10 @@ public class LoginActivity extends Activity {
             if (user.getStatus() == 1) {
                 user.setStatus(0);
                 //startActivity
-                Intent intent = new Intent();
+                intent = new Intent();
                 intent.setClass(LoginActivity.this, MainActivity.class);
-               intent.putExtra("userObject0", user);
+                setExtras();
+                intent.putExtra("userObject0", user);
                 startActivity(intent);
                 LoginActivity.this.finish();
             } else {
@@ -79,4 +82,14 @@ public class LoginActivity extends Activity {
             }
         }
     };
+
+    void setExtras(){
+        String[] holder = user.getMessage().split("-");
+        String buddy_list = holder[1];
+        String requests = holder[0];
+        System.out.println("Buddy List recieved: " + buddy_list);
+        intent.putExtra("Buddies0", buddy_list);
+        System.out.println("Requests recieved: " + requests);
+        intent.putExtra("Requests0", requests);
+    }
 }

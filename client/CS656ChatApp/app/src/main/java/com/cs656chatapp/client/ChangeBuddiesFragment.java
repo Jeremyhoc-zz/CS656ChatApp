@@ -89,7 +89,7 @@ public class ChangeBuddiesFragment extends Fragment {
         };
 
         getSentRequests();
-
+        try{
         unFriendButton = (Button) rootView.findViewById(R.id.unfriend_button);
         unFriendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,6 +105,9 @@ public class ChangeBuddiesFragment extends Fragment {
                 });builder.show();
             }
         });
+        }catch(Exception e){
+            e.printStackTrace();
+        }
 
         findButton = (Button) rootView.findViewById(R.id.friend_request_button1);
         findButton.setOnClickListener(new View.OnClickListener() {
