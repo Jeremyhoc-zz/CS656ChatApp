@@ -1,8 +1,12 @@
 package com.cs656chatapp.client;
 
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,13 +22,16 @@ import com.cs656chatapp.common.UserObject;
 
 public class BuddyListFragment extends ListFragment {
 
+    static int i=0;
     View listView;
     String[] buddies= new String[]{"These","are" ,"sample","values"};
     int mCurPosition;
     Intent intent;
+    Context context;
     UserObject user;
     String buddy_list,requests;
 
+    private BroadcastReceiver receiver;
 
     public BuddyListFragment(){
 
@@ -36,27 +43,50 @@ public class BuddyListFragment extends ListFragment {
 
         View rootView = inflater.inflate(R.layout.fragment_buddy_list, container, false);
 
+      context = getActivity().getApplicationContext();
       intent = getActivity().getIntent();
-      user =  (UserObject) intent.getSerializableExtra("userObject");
-      buddy_list = intent.getStringExtra("Buddies");
+      buddy_list = getArguments().getString("from Main");
+      if(i==0) buddy_list = intent.getStringExtra("Buddies");
+      i++;
       requests = intent.getStringExtra("Requests");
 
-          System.out.println("BUDDY LIST Buddy List recieved: " + buddy_list);
-          // if(!buddy_list.isEmpty()) loadBuddyList(buddy_list.split(","));
+      receiver = new BroadcastReceiver() {
+          @Override
+          public void onReceive(Context context, Intent intent) {
+              String operation = intent.getStringExtra(serverListener.serverOperation);
+              String message = intent.getStringExtra(serverListener.serverMessage);
+              user.setMessage(message);
+              if (operation.equals("User Does Not Exist")) {
+                  //change this
+              }else if (operation.equals("Take Buddy List")) {
+                  buddy_list=user.getMessage();
+                  System.out.println("BuddyFrag: The buddy list from reciever is: "+buddy_list);
+              }
+          }
+      };
 
-          System.out.println("BUDDY LIST Requests recieved: " + requests);
-          if (!requests.equals("none"))
+
+      System.out.println("BUDDY LIST Buddy List recieved: " + buddy_list);
+      System.out.println("BUDDY LIST Requests recieved: " + requests);
+      if (!requests.equals("none"))
               Toast.makeText(getActivity(), "You have requests!", Toast.LENGTH_LONG).show();
-
-      //String bud = getArguments().getString("from Main");
-
-
-
       if(!(buddy_list==null)) buddies = buddy_list.split(",");
-
       System.out.println("FROM BUDDY LIST FRAG: "+buddy_list);
 
         return rootView;
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(context).registerReceiver((receiver),
+                new IntentFilter(serverListener.serverResult)
+        );
+    }
+
+    @Override
+    public void onStop() {
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(receiver);
+        super.onStop();
     }
 
     @Override

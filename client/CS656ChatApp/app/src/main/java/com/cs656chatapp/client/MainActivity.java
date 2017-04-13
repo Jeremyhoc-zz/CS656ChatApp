@@ -91,8 +91,7 @@ public class MainActivity extends Activity implements
                     responseToFriendRequest(message);
                 } else if (operation.equals("Take Buddy List")) {
                     buddy_list = user.getMessage();
-                    System.out.println("Buddy List recieved: "+buddy_list);
-                   // if(!buddy_list.isEmpty()) //loadBuddyList(buddy_list.split(","));
+                    intent.putExtra("Buddies",buddy_list);
                 }else if (operation.equals("Take Request List")) {
                    // requests = user.getMessage();
                    // intent.putExtra("Requests",requests);

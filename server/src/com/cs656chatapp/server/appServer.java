@@ -451,7 +451,7 @@ class ThreadClientHandler extends Thread {
 	public UserObject deleteFriend(UserObject user)  throws ClassNotFoundException, IOException,SQLException {
 		//Disable an old friendship in the database friendshipHistory table
 		//1-Get friend's ID from database
-		rs = dbconn.executeSQL("select user_id from users where username=\""+user.getUsername()+"\";");
+		rs = dbconn.executeSQL("select user_id from users where username=\""+user.getMessage()+"\";");
 		int friendID=-1;
 		while(rs.next())
 		{

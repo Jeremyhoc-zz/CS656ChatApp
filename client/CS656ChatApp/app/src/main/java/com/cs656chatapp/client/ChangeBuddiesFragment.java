@@ -74,7 +74,7 @@ public class ChangeBuddiesFragment extends Fragment {
                 if (operation.equals("User Does Not Exist")) {
                     Toast.makeText(getActivity().getApplicationContext(),user.getMessage(),Toast.LENGTH_LONG).show();
                 }else if (operation.equals("Take List")) {
-                    Toast.makeText(getActivity().getApplicationContext(),"List Updated",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity().getApplicationContext(),"List Updated",Toast.LENGTH_SHORT).show();
                     recipients = user.getMessage();
                     System.out.println("Recipients recieved: "+recipients);
                     if(!user.getMessage().equals("nobody")) loadSentList(recipients.split(","));
@@ -100,7 +100,6 @@ public class ChangeBuddiesFragment extends Fragment {
                 builder.setItems(friends,new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog, int which){
                         deleteFriend(friends[which]);
-                        Toast.makeText(getActivity().getApplicationContext(),"Attempting to unfriend "+friends[which],Toast.LENGTH_SHORT).show();
                     }
                 });builder.show();
             }
@@ -125,7 +124,7 @@ public class ChangeBuddiesFragment extends Fragment {
                     Toast.makeText(getActivity().getApplicationContext(),findUsername+" has already sent you a request.",Toast.LENGTH_SHORT).show();
                 }
                 else if(recipients.contains(findUsername)){
-                    Toast.makeText(getActivity().getApplicationContext(),"Friend request to "+findUsername+" already sent!",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity().getApplicationContext(),"Friend request to "+findUsername+" already sent!",Toast.LENGTH_SHORT).show();
                 }
                 else{
                     user.setOperation("Request Friend");
