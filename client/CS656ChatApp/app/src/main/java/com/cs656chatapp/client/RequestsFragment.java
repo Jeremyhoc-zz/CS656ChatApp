@@ -1,26 +1,24 @@
 package com.cs656chatapp.client;
 
-import android.app.Fragment;
-
-
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.support.v4.content.LocalBroadcastManager;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.cs656chatapp.common.UserObject;
+
+import java.util.ArrayList;
 
 /**
  * Created by shereen on 4/12/2017.
@@ -29,14 +27,14 @@ import com.cs656chatapp.common.UserObject;
 public class RequestsFragment extends Fragment {
 
     UserObject user;
-    String requests;
-    Button backButton;
+    String requests_list;
     ListView listView;
     AlertDialog.Builder builder;
     Context context;
     Intent intent;
     View rootView;
     ArrayAdapter<String> adapter,adapter1;
+    protected ArrayList<String> requests = MainActivity.requests;
 
     private BroadcastReceiver receiver;
     CharSequence choices[] = new CharSequence[]{"Accept","Reject"};
@@ -53,7 +51,7 @@ public class RequestsFragment extends Fragment {
         rootView = inflater.inflate(R.layout.fragment_requests, container, false);
         listView = (ListView)rootView.findViewById(R.id.requestList);
 
-        requests = getArguments().getString("Requests");
+        requests_list = getArguments().getString("Requests");
         user =  (UserObject) intent.getSerializableExtra("userObject");
 
         //String bd= MainActivity.buddy_list;
@@ -68,15 +66,15 @@ public class RequestsFragment extends Fragment {
                 String operation = intent.getStringExtra(serverListener.serverOperation);
                 String message = intent.getStringExtra(serverListener.serverMessage);
                 user.setMessage(message);
-                if (operation.equals("Take Request List")) {
-                    requests=user.getMessage();
+                /*if (operation.equals("Take Request List")) {
+                    requests = user.getMessage();
                     if(requests.equals("none")){
                         Toast.makeText(getActivity(), "No Friend Requests", Toast.LENGTH_SHORT).show();
                     }else {
                         Toast.makeText(context, "Request List Updated", Toast.LENGTH_SHORT).show();
                     }
                     loadList();
-                }
+                }*/
             }
         };
 
@@ -99,7 +97,7 @@ public class RequestsFragment extends Fragment {
     protected void loadList(){
 
         if(!requests.equals("none")) {
-            adapter = new ArrayAdapter<String>(context, R.layout.request_list_item, R.id.req_text1, requests.split(","));
+            adapter = new ArrayAdapter<String>(context, R.layout.request_list_item, R.id.req_text1, requests);
             listView.setAdapter(adapter);
 
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -131,6 +129,12 @@ public class RequestsFragment extends Fragment {
             adapter1 = new ArrayAdapter<String>(context,android.R.layout.simple_list_item_1,empty.split(" "));
             listView.setAdapter(adapter1);
         }
+    }
+
+    //UNUSED
+    protected void getRequests(){
+        user.setOperation("Get Request List");
+        user = serverConnection.sendToServer(user);
     }
 
     protected void deleteRequest(String str){

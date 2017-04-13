@@ -1,25 +1,29 @@
 package com.cs656chatapp.client;
 
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.support.v4.content.LocalBroadcastManager;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
-import android.app.Fragment;
-import android.widget.EditText;
 
 import com.cs656chatapp.common.UserObject;
+
+import java.util.ArrayList;
+
+import static com.cs656chatapp.client.MainActivity.requests;
 
 /**
  * Created by shereen on 4/12/2017.
@@ -30,16 +34,18 @@ public class ChangeBuddiesFragment extends Fragment {
     ListView listView;
     Button unFriendButton,findButton;
     UserObject user;
-    String buddy_list;
+    String buddy_list, requests_list;
     String friends[];
     EditText FindUsername;
-    String findUsername="",findUsernameOld, requests, recipients;
+    String findUsername="",findUsernameOld, recipients;
     Intent i;
     AlertDialog.Builder builder;
     CharSequence choices[] = new CharSequence[]{"Delete","Keep"};
     Intent intent;
     Context context;
     View rootView;
+
+    public ArrayList<String> buddies = MainActivity.buddies;
 
     private BroadcastReceiver receiver;
 
@@ -56,14 +62,15 @@ public class ChangeBuddiesFragment extends Fragment {
         listView = (ListView)rootView.findViewById(R.id.senderList);
 
        // user = new UserObject();
-        buddy_list = getArguments().getString("Buddies");
-        requests = getArguments().getString("Requests");
-        user =  (UserObject) intent.getSerializableExtra("userObject");
+        //buddy_list = getArguments().getString("Buddies");
+        buddy_list = intent.getStringExtra("Buddies");
+        //requests_list = getArguments().getString("Requests");
+        requests_list = intent.getStringExtra("Requests");
+        user = (UserObject) intent.getSerializableExtra("userObject");
+        // buddy_list= (String)intent.getSerializableExtra("buddyList1");
+        //  requests= (String)intent.getSerializableExtra("Requests1");
 
-      //  buddy_list= (String)intent.getSerializableExtra("buddyList1");
-      //  requests= (String)intent.getSerializableExtra("Requests1");
-
-        System.out.println("I have these buddies and my name is "+user.getUsername()+"\n"+buddy_list+"\n"+requests);
+        System.out.println("I have these buddies and my name is "+user.getUsername()+"\n"+buddy_list+"\n"+requests_list);
 
         receiver = new BroadcastReceiver() {
             @Override
@@ -73,22 +80,22 @@ public class ChangeBuddiesFragment extends Fragment {
                 user.setMessage(message);
                 if (operation.equals("User Does Not Exist")) {
                     Toast.makeText(getActivity().getApplicationContext(),user.getMessage(),Toast.LENGTH_LONG).show();
-                }else if (operation.equals("Take List")) {
+                }/*else if (operation.equals("Take List")) {
                     Toast.makeText(getActivity().getApplicationContext(),"List Updated",Toast.LENGTH_SHORT).show();
                     recipients = user.getMessage();
                     System.out.println("Recipients recieved: "+recipients);
                     if(!user.getMessage().equals("nobody")) loadSentList(recipients.split(","));
-                }else if (operation.equals("Sent Request Deleted")) {
+                }/*else if (operation.equals("Sent Request Deleted")) {
                     Toast.makeText(getActivity().getApplicationContext(),"Request Deleted",Toast.LENGTH_SHORT).show();
                     getSentRequests();
                 }else if (operation.equals("Take Buddy List")) {
                     Toast.makeText(getActivity().getApplicationContext(),"Deleted Successfully",Toast.LENGTH_SHORT).show();
                     buddy_list=user.getMessage();
-                }
+                }*/
             }
         };
 
-        getSentRequests();
+        //getSentRequests();
         try{
         unFriendButton = (Button) rootView.findViewById(R.id.unfriend_button);
         unFriendButton.setOnClickListener(new View.OnClickListener() {
@@ -179,11 +186,11 @@ public class ChangeBuddiesFragment extends Fragment {
         });builder.show();
     }
 
-    protected void getSentRequests(){
-
+    /*protected void getSentRequests(){
         user.setOperation("Get Sent List");
         user = serverConnection.sendToServer(user);
-    }
+    }*/
+
     protected void loadSentList(String[] str){
 
         System.out.println("This is the first on list: "+str[0]);

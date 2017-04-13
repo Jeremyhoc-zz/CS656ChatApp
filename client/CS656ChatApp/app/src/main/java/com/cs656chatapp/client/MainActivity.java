@@ -1,36 +1,35 @@
 package com.cs656chatapp.client;
 
-import com.cs656chatapp.common.*;
-
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
-import android.content.Context;
-import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
-import android.content.IntentFilter;
+
+import com.cs656chatapp.common.UserObject;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class MainActivity extends Activity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks  {
 
-    ListView listView;
     Intent intent;
     UserObject user;
-    String buddy_list, requests;
-    String[] globalBuddies;
+    String buddy_list, requests_list;
     Intent i;
-    Bundle b1;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the
@@ -45,6 +44,8 @@ public class MainActivity extends Activity implements
      */
     private CharSequence mTitle;
     private BroadcastReceiver receiver;
+    static public ArrayList<String> buddies = new ArrayList<String>();
+    static public ArrayList<String> requests = new ArrayList<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,10 +56,12 @@ public class MainActivity extends Activity implements
         intent = getIntent();
         user = (UserObject)intent.getSerializableExtra("userObject0");
         buddy_list = intent.getStringExtra("Buddies0");
-        requests = intent.getStringExtra("Requests0");
+        for (String bl : buddy_list.split(",")) buddies.add(bl);
+        requests_list = intent.getStringExtra("Requests0");
+        for (String req : requests_list.split(",")) requests.add(req);
         System.out.println("From MAINACTIVITY:\nBuddies= "+buddy_list+"\nRequests= "+requests);
         intent.putExtra("userObject", user);
-        intent.putExtra("Requests",requests);
+        intent.putExtra("Requests",requests_list);
         intent.putExtra("Buddies",buddy_list);
 
         //getBuddyList();
@@ -92,12 +95,24 @@ public class MainActivity extends Activity implements
                 } else if (operation.equals("Take Buddy List")) {
                     buddy_list = user.getMessage();
                     intent.putExtra("Buddies",buddy_list);
-                }else if (operation.equals("Take Request List")) {
+                } else if (operation.equals("Take Request List")) {
                    // requests = user.getMessage();
                    // intent.putExtra("Requests",requests);
                     System.out.println("Requests recieved from main: "+requests);
                    // if(!requests.equals("none"))
                    //     Toast.makeText(MainActivity.this, "You have requests!", Toast.LENGTH_LONG).show();
+                } else if (operation.equals("Friend Logged On")) {
+                    String friend = user.getMessage(); //Who to apply the action on
+                    buddies.add(friend);
+                } else if (operation.equals("Friend Logged Off")) {
+                    String friend = user.getMessage(); //Who to apply the action on
+                    for (Iterator<String> iterator = buddies.iterator(); iterator.hasNext();) {
+                        String string = iterator.next();
+                        if (string.equalsIgnoreCase(friend)) {
+                            // Remove the current element from the iterator and buddies.
+                            iterator.remove();
+                        }
+                    }
                 }
             }
         };
@@ -140,14 +155,9 @@ public class MainActivity extends Activity implements
         text.setTypeface(null, Typeface.BOLD);
     }
     */
-    //UNUSED
-    protected void getBuddyList(){
-        user.setOperation("Get Buddy List");
-        user = serverConnection.sendToServer(user);
-    }
+
     //UNUSED
     protected void getRequests(){
-
         user.setOperation("Get Request List");
         user = serverConnection.sendToServer(user);
     }
@@ -202,48 +212,34 @@ public class MainActivity extends Activity implements
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
+        Bundle bundle = new Bundle();
+        bundle.putString("Buddies", buddy_list);
+        bundle.putString("Requests", requests_list);
 
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager
                 .beginTransaction()
                 .replace(R.id.container,
                         PlaceholderFragment.newInstance(position + 1)).commit();
-        if(position == 0){
-
-            Bundle bundle = new Bundle();
-            bundle.putString("from Main",buddy_list);
-
+        if(position == 0) {
             BuddyListFragment buddyListFragment = new BuddyListFragment();
             buddyListFragment.setArguments(bundle);
             getFragmentManager().beginTransaction().replace(R.id.frag_container,buddyListFragment).commit();
-        }
-
-        if(position == 1){
-
-            Bundle bundle = new Bundle();
-           bundle.putString("Requests",requests);
-
+        } if(position == 1) {
             RequestsFragment requestsFragment = new RequestsFragment();
             requestsFragment.setArguments(bundle);
             getFragmentManager().beginTransaction().replace(R.id.frag_container,requestsFragment).commit();
-        }
-        if(position == 2){
-
+        }if(position == 2) {
             ProfileFragment firstFragment = new ProfileFragment();
                 //  firstFragment.setArguments(getIntent().getExtras());
                 getFragmentManager().beginTransaction().replace(R.id.frag_container,firstFragment).commit();
                // getFragmentManager().beginTransaction().add(R.id.frag_container, firstFragment).commit();
-        }
-        if(position == 3){
-
-            Bundle bundle = new Bundle();
-            bundle.putString("Buddies",buddy_list);
-            bundle.putString("Requests",requests);
-
+        } if(position == 3) {
+            bundle.putString("Buddies", buddy_list);
+            bundle.putString("Requests", requests_list);
             ChangeBuddiesFragment changeBuddiesFragment = new ChangeBuddiesFragment();
             changeBuddiesFragment.setArguments(bundle);
             getFragmentManager().beginTransaction().replace(R.id.frag_container,changeBuddiesFragment).commit();
-
         }
     }
 
