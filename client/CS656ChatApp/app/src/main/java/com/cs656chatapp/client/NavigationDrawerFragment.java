@@ -1,11 +1,7 @@
 package com.cs656chatapp.client;
-import com.cs656chatapp.common.UserObject;
-
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Fragment;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -24,6 +20,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.cs656chatapp.common.UserObject;
 
 /**
  * Fragment used for managing interactions for and presentation of a navigation
@@ -303,6 +301,7 @@ public class NavigationDrawerFragment extends Fragment {
                 Intent intent = new Intent();
                 intent.setClass(getActivity(), LoginActivity.class);
                 startActivity(intent);
+                getActivity().stopService(new Intent(getActivity(), serverListener.class));
                 getActivity().finish();
             } catch (Exception e) {
                 Log.d("Jet", e.getMessage());

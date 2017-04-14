@@ -3,7 +3,6 @@ package com.cs656chatapp.client;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -51,7 +50,8 @@ public class MainActivity extends Activity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        if (buddies.size() > 0) buddies.clear();
+        if (requests.size() > 0) requests.clear();
         //--------------Get userObject and load buddy list-------------Get same UserObject from previous intent to load the buddy list.
         intent = getIntent();
         user = (UserObject)intent.getSerializableExtra("userObject0");
@@ -124,9 +124,6 @@ public class MainActivity extends Activity implements
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
-
-
-
     }
 
     @Override
@@ -216,11 +213,11 @@ public class MainActivity extends Activity implements
         bundle.putString("Buddies", buddy_list);
         bundle.putString("Requests", requests_list);
 
-        FragmentManager fragmentManager = getFragmentManager();
+/*        FragmentManager fragmentManager = getFragmentManager();
         fragmentManager
                 .beginTransaction()
                 .replace(R.id.container,
-                        PlaceholderFragment.newInstance(position + 1)).commit();
+                        PlaceholderFragment.newInstance(position + 1)).commit();*/
         if(position == 0) {
             BuddyListFragment buddyListFragment = new BuddyListFragment();
             buddyListFragment.setArguments(bundle);
@@ -228,18 +225,18 @@ public class MainActivity extends Activity implements
         } if(position == 1) {
             RequestsFragment requestsFragment = new RequestsFragment();
             requestsFragment.setArguments(bundle);
-            getFragmentManager().beginTransaction().replace(R.id.frag_container,requestsFragment).commit();
+            getFragmentManager().beginTransaction().replace(R.id.frag_container,requestsFragment).addToBackStack("requestsFrag").commit();
         }if(position == 2) {
             ProfileFragment firstFragment = new ProfileFragment();
                 //  firstFragment.setArguments(getIntent().getExtras());
-                getFragmentManager().beginTransaction().replace(R.id.frag_container,firstFragment).commit();
+                getFragmentManager().beginTransaction().replace(R.id.frag_container,firstFragment).addToBackStack("profileFrag").commit();
                // getFragmentManager().beginTransaction().add(R.id.frag_container, firstFragment).commit();
         } if(position == 3) {
-            bundle.putString("Buddies", buddy_list);
-            bundle.putString("Requests", requests_list);
+/*            bundle.putString("Buddies", buddy_list);
+            bundle.putString("Requests", requests_list);*/
             ChangeBuddiesFragment changeBuddiesFragment = new ChangeBuddiesFragment();
             changeBuddiesFragment.setArguments(bundle);
-            getFragmentManager().beginTransaction().replace(R.id.frag_container,changeBuddiesFragment).commit();
+            getFragmentManager().beginTransaction().replace(R.id.frag_container,changeBuddiesFragment).addToBackStack("changeBuddiesFrag").commit();
         }
     }
 

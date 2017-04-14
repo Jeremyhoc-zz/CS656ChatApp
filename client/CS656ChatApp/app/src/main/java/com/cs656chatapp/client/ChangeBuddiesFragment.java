@@ -32,15 +32,15 @@ import static com.cs656chatapp.client.MainActivity.requests;
 public class ChangeBuddiesFragment extends Fragment {
 
     ListView listView;
-    Button unFriendButton,findButton;
+    Button unFriendButton, findButton;
     UserObject user;
     String buddy_list, requests_list;
     String friends[];
     EditText FindUsername;
-    String findUsername="",findUsernameOld, recipients;
+    String findUsername = "", findUsernameOld, recipients;
     Intent i;
     AlertDialog.Builder builder;
-    CharSequence choices[] = new CharSequence[]{"Delete","Keep"};
+    CharSequence choices[] = new CharSequence[]{"Delete", "Keep"};
     Intent intent;
     Context context;
     View rootView;
@@ -49,7 +49,7 @@ public class ChangeBuddiesFragment extends Fragment {
 
     private BroadcastReceiver receiver;
 
-    public ChangeBuddiesFragment(){
+    public ChangeBuddiesFragment() {
 
     }
 
@@ -59,9 +59,9 @@ public class ChangeBuddiesFragment extends Fragment {
         intent = getActivity().getIntent();
         context = getActivity().getApplicationContext();
         rootView = inflater.inflate(R.layout.fragment_change_buddies, container, false);
-        listView = (ListView)rootView.findViewById(R.id.senderList);
+        listView = (ListView) rootView.findViewById(R.id.senderList);
 
-       // user = new UserObject();
+        // user = new UserObject();
         //buddy_list = getArguments().getString("Buddies");
         buddy_list = intent.getStringExtra("Buddies");
         //requests_list = getArguments().getString("Requests");
@@ -70,7 +70,7 @@ public class ChangeBuddiesFragment extends Fragment {
         // buddy_list= (String)intent.getSerializableExtra("buddyList1");
         //  requests= (String)intent.getSerializableExtra("Requests1");
 
-        System.out.println("I have these buddies and my name is "+user.getUsername()+"\n"+buddy_list+"\n"+requests_list);
+        System.out.println("I have these buddies and my name is " + user.getUsername() + "\n" + buddy_list + "\n" + requests_list);
 
         receiver = new BroadcastReceiver() {
             @Override
@@ -79,7 +79,7 @@ public class ChangeBuddiesFragment extends Fragment {
                 String message = intent.getStringExtra(serverListener.serverMessage);
                 user.setMessage(message);
                 if (operation.equals("User Does Not Exist")) {
-                    Toast.makeText(getActivity().getApplicationContext(),user.getMessage(),Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity().getApplicationContext(), user.getMessage(), Toast.LENGTH_LONG).show();
                 }/*else if (operation.equals("Take List")) {
                     Toast.makeText(getActivity().getApplicationContext(),"List Updated",Toast.LENGTH_SHORT).show();
                     recipients = user.getMessage();
@@ -96,22 +96,23 @@ public class ChangeBuddiesFragment extends Fragment {
         };
 
         //getSentRequests();
-        try{
-        unFriendButton = (Button) rootView.findViewById(R.id.unfriend_button);
-        unFriendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                friends = buddy_list.split(",");
-                builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Tap on a friend to remove them.");
-                builder.setItems(friends,new DialogInterface.OnClickListener(){
-                    public void onClick(DialogInterface dialog, int which){
-                        deleteFriend(friends[which]);
-                    }
-                });builder.show();
-            }
-        });
-        }catch(Exception e){
+        try {
+            unFriendButton = (Button) rootView.findViewById(R.id.unfriend_button);
+            unFriendButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    friends = buddy_list.split(",");
+                    builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle("Tap on a friend to remove them.");
+                    builder.setItems(friends, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            deleteFriend(friends[which]);
+                        }
+                    });
+                    builder.show();
+                }
+            });
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -121,19 +122,15 @@ public class ChangeBuddiesFragment extends Fragment {
             public void onClick(View v) {
                 FindUsername = (EditText) rootView.findViewById(R.id.friend_request_username1);
                 findUsername = FindUsername.getText().toString();
-                if(findUsername.equals(user.getUsername())){
-                    Toast.makeText(getActivity().getApplicationContext(),"You can't friend yourself!",Toast.LENGTH_SHORT).show();
-                }
-                else if(buddy_list.contains(findUsername)){
-                    Toast.makeText(getActivity().getApplicationContext(),"You are already friends with "+findUsername,Toast.LENGTH_SHORT).show();
-                }
-                else if(requests.contains(findUsername)){
-                    Toast.makeText(getActivity().getApplicationContext(),findUsername+" has already sent you a request.",Toast.LENGTH_SHORT).show();
-                }
-                else if(recipients.contains(findUsername)){
-                    Toast.makeText(getActivity().getApplicationContext(),"Friend request to "+findUsername+" already sent!",Toast.LENGTH_SHORT).show();
-                }
-                else{
+                if (findUsername.equals(user.getUsername())) {
+                    Toast.makeText(getActivity().getApplicationContext(), "You can't friend yourself!", Toast.LENGTH_SHORT).show();
+                } else if (buddy_list.contains(findUsername)) {
+                    Toast.makeText(getActivity().getApplicationContext(), "You are already friends with " + findUsername, Toast.LENGTH_SHORT).show();
+                } else if (requests.contains(findUsername)) {
+                    Toast.makeText(getActivity().getApplicationContext(), findUsername + " has already sent you a request.", Toast.LENGTH_SHORT).show();
+                } else if (recipients.contains(findUsername)) {
+                    Toast.makeText(getActivity().getApplicationContext(), "Friend request to " + findUsername + " already sent!", Toast.LENGTH_SHORT).show();
+                } else {
                     user.setOperation("Request Friend");
                     user.setMessage(findUsername);
                     user = serverConnection.sendToServer(user);
@@ -143,6 +140,7 @@ public class ChangeBuddiesFragment extends Fragment {
 
         return rootView;
     }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -157,33 +155,35 @@ public class ChangeBuddiesFragment extends Fragment {
         super.onStop();
     }
 
-    protected void deleteFriend(String recipientDel){
+    protected void deleteFriend(String recipientDel) {
         user.setMessage(recipientDel);
         user.setOperation("Delete Friend");
         user = serverConnection.sendToServer(user);
     }
 
-    protected void deleteSentRequest(String recipientDel){
+    protected void deleteSentRequest(String recipientDel) {
         user.setMessage(recipientDel);
         user.setOperation("Delete Request");
         user = serverConnection.sendToServer(user);
     }
-    protected void onClick(final String val){
+
+    protected void onClick(final String val) {
 
         builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Delete request sent to "+val+"?");
-        builder.setItems(choices,new DialogInterface.OnClickListener(){
-            public void onClick(DialogInterface dialog, int which){
-                if(which==0){
-                    System.out.println("Result: "+choices[0]);
+        builder.setTitle("Delete request sent to " + val + "?");
+        builder.setItems(choices, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == 0) {
+                    System.out.println("Result: " + choices[0]);
                     deleteSentRequest(val);
                 }
-                if(which==1){
-                    System.out.println("Result: "+choices[1]);
+                if (which == 1) {
+                    System.out.println("Result: " + choices[1]);
 
                 }
             }
-        });builder.show();
+        });
+        builder.show();
     }
 
     /*protected void getSentRequests(){
@@ -191,12 +191,12 @@ public class ChangeBuddiesFragment extends Fragment {
         user = serverConnection.sendToServer(user);
     }*/
 
-    protected void loadSentList(String[] str){
+    protected void loadSentList(String[] str) {
 
-        System.out.println("This is the first on list: "+str[0]);
-        listView = (ListView)rootView.findViewById(R.id.senderList);
+        System.out.println("This is the first on list: " + str[0]);
+        listView = (ListView) rootView.findViewById(R.id.senderList);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,R.layout.request_list_item,R.id.req_text1,str);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, R.layout.request_list_item, R.id.req_text1, str);
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -208,7 +208,6 @@ public class ChangeBuddiesFragment extends Fragment {
             }
         });
     }
-
 
 
 }
