@@ -8,9 +8,9 @@
     <string name="sign_in">SIGN IN</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_section1">Buddy List</string>
-    <string name="title_section2">Requests</string>
+    <string name="title_section2">Friendship</string>
     <string name="title_section3">My Profile</string>
-    <string name="title_section4">Add/Remove Friends</string>
+    <string name="title_section4">Placeholder</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
@@ -23,11 +23,11 @@
     <string name="confirm_password">confirm password</string>
     <string name="register">REGISTER</string>
     <string name="go_back">Go Back</string>
-    <string name="find">Find</string>
     <string name="search">Search</string>
-    <string name="unfriend">Unfriend</string>
-    <string name="searchFriend">Friends</string>
-    <string name="enterFriend">Enter a Username to search for a friend:</string>
+    <string name="friends">Friends</string>
+    <string name="sent">Pending</string>
+    <string name="requests">Requests</string>
+    <string name="enterFriend">add a friend</string>
     <string name="Reqs">These are your Friend Requests:</string>
 
 

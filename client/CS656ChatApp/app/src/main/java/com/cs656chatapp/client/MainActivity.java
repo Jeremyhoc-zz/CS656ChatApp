@@ -28,7 +28,7 @@ public class MainActivity extends Activity implements
 
     Intent intent;
     UserObject user;
-    String buddy_list, requests_list;
+    String buddy_list, requests_list,sent_list;
     Intent i;
 
     /**
@@ -46,6 +46,7 @@ public class MainActivity extends Activity implements
     private BroadcastReceiver receiver;
     static public ArrayList<String> buddies = new ArrayList<String>();
     static public ArrayList<String> requests = new ArrayList<String>();
+    static public ArrayList<String> sent = new ArrayList<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,15 +55,24 @@ public class MainActivity extends Activity implements
 
         //--------------Get userObject and load buddy list-------------Get same UserObject from previous intent to load the buddy list.
         intent = getIntent();
+        buddies.clear(); requests.clear(); sent.clear();
         user = (UserObject)intent.getSerializableExtra("userObject0");
         buddy_list = intent.getStringExtra("Buddies0");
         for (String bl : buddy_list.split(",")) buddies.add(bl);
+        if(buddies.contains("No friends")) buddies.clear();
         requests_list = intent.getStringExtra("Requests0");
         for (String req : requests_list.split(",")) requests.add(req);
-        System.out.println("From MAINACTIVITY:\nBuddies= "+buddy_list+"\nRequests= "+requests);
+        if(requests.contains("none")) requests.clear();
+        sent_list = intent.getStringExtra("Sent0");
+        for (String sen : sent_list.split(",")) sent.add(sen);
+        if(sent.contains("nobody")) sent.clear();
+        System.out.println("From MAINACTIVITY: username= " + user.getUsername() +
+                "\nBuddies= "+buddy_list+"\nRequests= "+requests_list+"\nSent= "+sent_list);
+        System.out.println("Also from Main:\nBuddies="+buddies+" Requests="+requests+" Sent="+sent);
         intent.putExtra("userObject", user);
         intent.putExtra("Requests",requests_list);
         intent.putExtra("Buddies",buddy_list);
+        intent.putExtra("Sent",sent_list);
 
         //getBuddyList();
         //--------------End buddy list load-------------
@@ -70,7 +80,7 @@ public class MainActivity extends Activity implements
         i = new Intent(MainActivity.this, serverListener.class);
         this.startService(i);
         receiver = new BroadcastReceiver() {
-        @Override
+            @Override
             public void onReceive(Context context, Intent intent) {
                 String operation = intent.getStringExtra(serverListener.serverOperation);
                 String message = intent.getStringExtra(serverListener.serverMessage);
@@ -88,20 +98,15 @@ public class MainActivity extends Activity implements
                     addFriendToList(message);
                 } else if (operation.equals("Friend Logged Off")) {
                     removeFriendFromList(message);
-                } else if (operation.equals("New Friend Request")) {
+                } else if (operation.equals("New Friend Request")) {        //in use
+                    System.out.println("FINALLLLY!");
                     receiveFriendRequest(message);
                 } else if (operation.equals("Response to Friend Request")) {
                     responseToFriendRequest(message);
                 } else if (operation.equals("Take Buddy List")) {
                     buddy_list = user.getMessage();
                     intent.putExtra("Buddies",buddy_list);
-                } else if (operation.equals("Take Request List")) {
-                   // requests = user.getMessage();
-                   // intent.putExtra("Requests",requests);
-                    System.out.println("Requests recieved from main: "+requests);
-                   // if(!requests.equals("none"))
-                   //     Toast.makeText(MainActivity.this, "You have requests!", Toast.LENGTH_LONG).show();
-                } else if (operation.equals("Friend Logged On")) {
+                }  else if (operation.equals("Friend Logged On")) {
                     String friend = user.getMessage(); //Who to apply the action on
                     buddies.add(friend);
                 } else if (operation.equals("Friend Logged Off")) {
@@ -113,6 +118,11 @@ public class MainActivity extends Activity implements
                             iterator.remove();
                         }
                     }
+                }  else if (operation.equals("Update Buddy List")) {
+                    String friend = user.getMessage(); //Who to apply the action on
+                    buddies.add(friend);
+                }  else if (operation.equals("Update Sent List")) {
+                    sent.add(user.getMessage());
                 }
             }
         };
@@ -124,7 +134,6 @@ public class MainActivity extends Activity implements
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
-
 
 
     }
@@ -142,6 +151,13 @@ public class MainActivity extends Activity implements
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
         super.onStop();
     }
+/*
+    @Override
+    public void keepUp(ArrayList<String> b,ArrayList<String> r,ArrayList<String> s){
+        buddies = b;
+        requests = r;
+        sent = s;
+    }*/
 
     /*   //Code to make a listview item bold
 
@@ -184,7 +200,13 @@ public class MainActivity extends Activity implements
     }
 
     protected void receiveFriendRequest(String friend) {
-        String strangerUsername = friend;
+        if(!requests.contains("none")) requests.add(friend);
+        else{
+            requests.clear();
+            requests.add(friend);
+        }
+        Toast.makeText(MainActivity.this, "New Friend Request from "+friend, Toast.LENGTH_LONG).show();
+       // String strangerUsername = friend;
         //Create an area where we can accept/reject the friendship request from strangerUsername
     }
 
@@ -226,14 +248,14 @@ public class MainActivity extends Activity implements
             buddyListFragment.setArguments(bundle);
             getFragmentManager().beginTransaction().replace(R.id.frag_container,buddyListFragment).commit();
         } if(position == 1) {
-            RequestsFragment requestsFragment = new RequestsFragment();
-            requestsFragment.setArguments(bundle);
-            getFragmentManager().beginTransaction().replace(R.id.frag_container,requestsFragment).commit();
+            ChangeBuddiesFragment changeBuddiesFragment = new ChangeBuddiesFragment();
+            changeBuddiesFragment.setArguments(bundle);
+            getFragmentManager().beginTransaction().replace(R.id.frag_container,changeBuddiesFragment).commit();
         }if(position == 2) {
             ProfileFragment firstFragment = new ProfileFragment();
-                //  firstFragment.setArguments(getIntent().getExtras());
-                getFragmentManager().beginTransaction().replace(R.id.frag_container,firstFragment).commit();
-               // getFragmentManager().beginTransaction().add(R.id.frag_container, firstFragment).commit();
+            //  firstFragment.setArguments(getIntent().getExtras());
+            getFragmentManager().beginTransaction().replace(R.id.frag_container,firstFragment).commit();
+            // getFragmentManager().beginTransaction().add(R.id.frag_container, firstFragment).commit();
         } if(position == 3) {
             bundle.putString("Buddies", buddy_list);
             bundle.putString("Requests", requests_list);

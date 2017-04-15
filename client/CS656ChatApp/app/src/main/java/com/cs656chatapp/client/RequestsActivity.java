@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.cs656chatapp.common.UserObject;
 
@@ -24,10 +25,10 @@ import java.util.ArrayList;
  * Created by shereen on 4/12/2017.
  */
 
-public class RequestsFragment extends Fragment {
+public class RequestsActivity extends Fragment {
 
     UserObject user;
-    String requests_list;
+    String requests_list, buddy_list,sent_list;
     ListView listView;
     AlertDialog.Builder builder;
     Context context;
@@ -39,7 +40,7 @@ public class RequestsFragment extends Fragment {
     private BroadcastReceiver receiver;
     CharSequence choices[] = new CharSequence[]{"Accept","Reject"};
 
-    public RequestsFragment(){
+    public RequestsActivity(){
 
     }
 
@@ -52,11 +53,16 @@ public class RequestsFragment extends Fragment {
         listView = (ListView)rootView.findViewById(R.id.requestList);
 
         requests_list = getArguments().getString("Requests");
+        buddy_list = getArguments().getString("Buddies");
+        sent_list = getArguments().getString("Sent");
         user =  (UserObject) intent.getSerializableExtra("userObject");
 
         //String bd= MainActivity.buddy_list;
 
-        System.out.println("I have these requests and my name is "+user.getUsername()+"\n"+requests);
+        System.out.println("FRIENDSHIP I am "+user.getUsername());
+        System.out.println("FRIENDSHIP Buddy List recieved: " + buddy_list);
+        System.out.println("FRIENDSHIP Requests received: " + requests_list);
+        System.out.println("FRIENDSHIP Sent List received: " + sent_list);
 
         loadList();
 
@@ -104,22 +110,8 @@ public class RequestsFragment extends Fragment {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     final String itemValue = (String) listView.getItemAtPosition(position);
-                    builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle("Add "+itemValue+" as a friend?");
-                    builder.setItems(choices,new DialogInterface.OnClickListener(){
-                        public void onClick(DialogInterface dialog, int which){
-                            if(which==0){
-                                //Accept
-                                System.out.println("Result: "+choices[0]);
-                                deleteRequest("Accept,"+itemValue);
-                            }
-                            if(which==1){
-                                //Reject
-                                System.out.println("Result: "+choices[1]);
-                                deleteRequest("Reject,"+itemValue);
-                            }
-                        }
-                    });builder.show();
+                    Toast.makeText(getActivity(), "Clicked item "+itemValue, Toast.LENGTH_SHORT).show();
+
 
                 }
             });

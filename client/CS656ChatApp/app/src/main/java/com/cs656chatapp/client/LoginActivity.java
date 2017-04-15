@@ -86,10 +86,13 @@ public class LoginActivity extends Activity {
     void setExtras(){
         String[] holder = user.getMessage().split("-");
         String buddy_list = holder[1];
-        String requests = holder[0];
+        String request_list = holder[2];
+        String sent_list = holder[0];
         System.out.println("Buddy List recieved: " + buddy_list);
         intent.putExtra("Buddies0", buddy_list);
-        System.out.println("Requests recieved: " + requests);
-        intent.putExtra("Requests0", requests);
+        System.out.println("Requests recieved: " + request_list);
+        intent.putExtra("Requests0", request_list);
+        System.out.println("Sent List recieved: " + sent_list);
+        intent.putExtra("Sent0", sent_list);
     }
 }

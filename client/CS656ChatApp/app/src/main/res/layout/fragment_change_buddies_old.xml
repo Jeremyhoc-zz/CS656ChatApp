@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cs656chatapp.client.ChangeBuddiesFragment"
+    android:background="#000">
+
+    <TextView
+        android:id="@+id/tv2"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="@string/enterFriend"
+        android:layout_marginTop="30dp"
+        android:textSize="20dp"
+        android:textColor="@color/White"
+        android:layout_centerHorizontal="true"/>
+    <EditText
+        android:id="@+id/friend_request_username1"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_alignLeft="@+id/tv2"
+        android:layout_alignRight="@+id/tv2"
+        android:layout_below="@+id/tv2"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/textinputborder"
+        android:ems="10"
+        android:hint="@string/username"
+        android:inputType="textPersonName"
+        android:paddingLeft="10dp"
+        android:textColor="@color/Black"
+        android:textColorHint="@color/Silver" />
+
+    <Button
+        android:id="@+id/friend_request_button1"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_alignLeft="@+id/friend_request_username1"
+        android:layout_alignRight="@+id/friend_request_username1"
+        android:layout_below="@+id/friend_request_username1"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/buttoninputborder"
+        android:text="@string/search"
+        android:textColor="@color/White"
+        android:textSize="15sp" />
+
+        <Button
+            android:id="@+id/unfriend_button"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_alignLeft="@+id/friend_request_button1"
+            android:layout_alignRight="@+id/friend_request_button1"
+            android:layout_below="@+id/friend_request_button1"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/buttoninputborder"
+            android:text="@string/action_example"
+            android:textColor="@color/White"
+            android:textSize="15sp" />
+    <ListView
+        android:id="@+id/senderList"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="@drawable/customborder"
+        android:layout_alignLeft="@+id/unfriend_button"
+        android:layout_alignRight="@+id/unfriend_button"
+        android:layout_below="@+id/unfriend_button">
+
+    </ListView>
+
+
+</RelativeLayout>
