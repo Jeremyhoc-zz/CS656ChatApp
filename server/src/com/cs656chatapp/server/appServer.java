@@ -51,6 +51,10 @@ class ThreadClientHandler extends Thread {
 	{
 		try
 		{
+			System.out.println("People online:");
+			for (Map.Entry<String, Socket> entry: clients.entrySet()){
+				System.out.println(entry.getKey());
+			}
 			boolean sendToClient=true;
 			boolean done = false;
 			IN = new ObjectInputStream(incoming.getInputStream());
@@ -61,6 +65,15 @@ class ThreadClientHandler extends Thread {
 			dbconn = new dbConnection();
 			userIn = checkCredentials(userIn);			
 			int found = userIn.getStatus();
+			//check if user already logged in
+			System.out.println("Checking if user already logged in...");
+			if(found==1 && clients.containsKey(clientUsername)){
+			    System.out.println("Already logged in ");
+			    userIn.setStatus(2);
+			    OUT.writeUnshared(userIn);
+				OUT.flush();
+				found=-1;
+			}
 			if (found == 1)
 			{
 				System.out.println(clientUsername);
@@ -91,7 +104,7 @@ class ThreadClientHandler extends Thread {
 					userOut.setClientName(name);
 					userOut.setUsername(username);
 					userOut.setPassword(password);
-					
+					sendToClient=true;
 					
 					if (operation.equals("Text")) {
 						userOut.setOperation("Text");
@@ -99,26 +112,22 @@ class ThreadClientHandler extends Thread {
 					}
 					else if (operation.equals("Get Buddy List")) {
 						userOut = loadBuddyList(userOut);
-						sendToClient=true;
 					}
 					else if (operation.equals("Retrieve Messages")) {
 						System.out.printf("%s requested to retrieve messages with %s", clientUsername, message );
+						sendToClient=false;
 					}
 					else if (operation.equals("Send Text")) {
 						userOut = sendMessage(userOut);
-						sendToClient=true;
 					} 
 					else if (operation.equals("Send Pic")) {
 						userOut = sendPicture(userOut);
-						sendToClient=true;
 					} 
 					else if (operation.equals("Send Voice")) {
 						userOut = sendVoice(userOut);
-						sendToClient=true;
 					} 
 					else if (operation.equals("Friend Request")) {
 						userOut = friendRequestHandler(userIn/*, operation, message, username*/);
-						sendToClient=true;
 					}
 					else if (operation.equals("Delete Request")) {
 						deleteRequest(userOut);
@@ -132,12 +141,11 @@ class ThreadClientHandler extends Thread {
 					}
 					else if (operation.equals("Delete Friend")) {
 						   deleteFriend(userOut);
-						   sendToClient=true;
 					}
 					else if (operation.equals("Log Out")) {
 						logOut(userOut, username);
-						sendToClient=true;
 						done = true;
+						clients.remove(username,incoming);
 						continue;
 					} else {
 						System.out.printf("Empty object came from %s", clientUsername);
@@ -216,7 +224,6 @@ class ThreadClientHandler extends Thread {
 	}
 	
 	public UserObject logIn(UserObject user) throws ClassNotFoundException, IOException, SQLException {
-		clients.put(user.getUsername(), incoming);
 		String tempHolder;
 		user = loadBuddyList(user);
 		tempHolder=user.getMessage();

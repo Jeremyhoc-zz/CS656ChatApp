@@ -55,7 +55,7 @@ public class NewUserActivity extends AppCompatActivity {
                 }
                 if (!username.equals("") && !password.equals("") && !name.equals("") && !confirm_password.equals("") && passwordSwitch) {
                     System.out.println("Sending this to server!");
-                    // new Thread(send).start();
+                    //new Thread(send).start();
                     runThread();
                 }
 

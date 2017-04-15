@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.cs656chatapp.common.UserObject;
 
@@ -63,16 +64,19 @@ public class LoginActivity extends Activity {
                     password = Epassword.getText().toString();
                     if (!username.equals("") && !password.equals("")) {
                         System.out.println("Starting up!");
-                        new Thread(send).start();
+                       // new Thread(send).start();
+                        runThread();
                     }
                 }
             });
         }
     }
 
-    private Runnable send = new Runnable() {
-        @Override
-        public void run() {
+    private void runThread() {
+        runOnUiThread(new Thread(new Runnable() {
+            // private Runnable send = runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
             String up = username + " " + password;
             System.out.println(up);
             user = new UserObject();
@@ -89,11 +93,17 @@ public class LoginActivity extends Activity {
                 intent.putExtra("userObject0", user);
                 startActivity(intent);
                 LoginActivity.this.finish();
+            } else if (user.getStatus() == 2) {
+                Toast.makeText(LoginActivity.this, "User already logged in!", Toast.LENGTH_LONG).show();
             } else {
                 Log.d("Jet", "no match");
+                Toast.makeText(LoginActivity.this, "Error logging in!", Toast.LENGTH_LONG).show();
+
             }
-        }
-    };
+            }
+        }));
+
+    }
 
     void setExtras() {
         String[] holder = user.getMessage().split("-");
