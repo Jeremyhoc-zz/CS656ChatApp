@@ -13,14 +13,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.cs656chatapp.common.UserObject;
 
 import java.util.ArrayList;
-
-import static com.cs656chatapp.client.MainActivity.buddies;
 
 
 /**
@@ -29,17 +28,16 @@ import static com.cs656chatapp.client.MainActivity.buddies;
 
 public class BuddyListFragment extends ListFragment {
 
-    View listView;
     Intent intent;
     Context context;
-    UserObject user;
-    //public ArrayList<String> buddies = MainActivity.buddies;
+    ListView buddyListView;
+    public ArrayList<String> buddies = MainActivity.buddies;
 
     String buddy_list, requests_list;
 
     private BroadcastReceiver receiver;
 
-    public BuddyListFragment(){
+    public BuddyListFragment() {
 
     }
 
@@ -51,8 +49,6 @@ public class BuddyListFragment extends ListFragment {
 
         context = getActivity().getApplicationContext();
         intent = getActivity().getIntent();
-        user = new UserObject();
-        user = (UserObject)intent.getSerializableExtra("userObject");
         buddy_list = intent.getStringExtra("Buddies");
         requests_list = intent.getStringExtra("Requests");
 
@@ -73,39 +69,63 @@ public class BuddyListFragment extends ListFragment {
           }
       };*/
 
-        System.out.println("BUDDY LIST Username: " + user.getUsername());
+        buddyListView = (ListView) rootView.findViewById(R.id.buddyListView);
+
         System.out.println("BUDDY LIST Buddy List recieved: " + buddy_list);
         System.out.println("BUDDY LIST Requests received: " + requests_list);
         if (!requests_list.equals("none"))
             Toast.makeText(getActivity(), "You have requests!", Toast.LENGTH_LONG).show();
+/*      if(!(buddy_list == null)) {
+          buddies = buddy_list.split(",");
+      }*/
+        System.out.println("FROM BUDDY LIST FRAG: " + buddy_list);
 
         return rootView;
     }
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//        LocalBroadcastManager.getInstance(context).registerReceiver((receiver),
-//                new IntentFilter(serverListener.serverResult)
-//        );
-//    }
-//
-//    @Override
-//    public void onStop() {
-//        LocalBroadcastManager.getInstance(context).unregisterReceiver(receiver);
-//        super.onStop();
-//    }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(context).registerReceiver((receiver),
+                new IntentFilter(serverListener.serverResult)
+        );
+        loadBuddyList();
+    }
+
+    @Override
+    public void onStop() {
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(receiver);
+        super.onStop();
+    }
+
+/*    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+        super.onActivityCreated(savedInstanceState);*/
 
-        setListAdapter(new ArrayAdapter<String>(getActivity(),R.layout.buddy_list_item,R.id.bud_text1,buddies));
+    public void loadBuddyList() {
+        ListAdapter myListAdapter = new ArrayAdapter<String>(
+                getActivity(),
+                R.layout.buddy_list_item,
+                R.id.bud_text1,
+                buddies);
+
+        buddyListView.setAdapter(myListAdapter);
+
+        buddyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                Bundle bundle = new Bundle();
+                bundle.putString("friendName", (String) buddyListView.getItemAtPosition(position));
+
+                ChatFragment chatFragment = new ChatFragment();
+                chatFragment.setArguments(bundle);
+                getFragmentManager().beginTransaction().replace(R.id.frag_container,chatFragment).addToBackStack("chatFrag").commit();
+/*                Toast.makeText(getActivity().getApplicationContext(),
+                        "Item in position " + position + " is called " + buddyListView.getItemAtPosition(position), Toast.LENGTH_LONG).show();
+                String itemValue = (String) buddyListView.getItemAtPosition(position);*/
+            }
+        });
 
     }
-    @Override
-    public void onListItemClick(ListView l, View v, int pos, long id) {
-        super.onListItemClick(l, v, pos, id);
-        Toast.makeText(getActivity(), "Item " + pos + " was clicked", Toast.LENGTH_SHORT).show();
-    }
-
 }

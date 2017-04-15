@@ -1,6 +1,8 @@
 package com.cs656chatapp.client;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -11,7 +13,6 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.cs656chatapp.common.UserObject;
-
 
 
 public class LoginActivity extends Activity {
@@ -26,36 +27,47 @@ public class LoginActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_user);
-        Eusername = (EditText) findViewById(R.id.editTextUsername);
-        Epassword = (EditText) findViewById(R.id.editTextPassword);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+        if (isMyServiceRunning(serverListener.class)) {
+            //User is logged in already, so start mainactivity
+            System.out.println("logged in already");
+            intent = new Intent();
+            intent.setClass(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+            LoginActivity.this.finish();
+        } else {
+            // else start loginactivity
+            System.out.println("not logged in yet.");
+            setContentView(R.layout.activity_user);
+            Eusername = (EditText) findViewById(R.id.editTextUsername);
+            Epassword = (EditText) findViewById(R.id.editTextPassword);
 
-        newButton = (Button) findViewById(R.id.button_new);
-        newButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setClass(LoginActivity.this, NewUserActivity.class);
-                startActivity(intent);
-                LoginActivity.this.finish();
-            }
-        });
-
-
-        nextPage = (Button) findViewById(R.id.buttonNextPage);
-        nextPage.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                username = Eusername.getText().toString();
-                password = Epassword.getText().toString();
-                if (!username.equals("") && !password.equals("")) {
-                    System.out.println("Starting up!");
-                    new Thread(send).start();
+            newButton = (Button) findViewById(R.id.button_new);
+            newButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent();
+                    intent.setClass(LoginActivity.this, NewUserActivity.class);
+                    startActivity(intent);
+                    LoginActivity.this.finish();
                 }
-            }
-        });
+            });
+
+
+            nextPage = (Button) findViewById(R.id.buttonNextPage);
+            nextPage.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    username = Eusername.getText().toString();
+                    password = Epassword.getText().toString();
+                    if (!username.equals("") && !password.equals("")) {
+                        System.out.println("Starting up!");
+                        new Thread(send).start();
+                    }
+                }
+            });
+        }
     }
 
     private Runnable send = new Runnable() {
@@ -83,7 +95,7 @@ public class LoginActivity extends Activity {
         }
     };
 
-    void setExtras(){
+    void setExtras() {
         String[] holder = user.getMessage().split("-");
         String buddy_list = holder[1];
         String request_list = holder[2];
@@ -94,5 +106,16 @@ public class LoginActivity extends Activity {
         intent.putExtra("Requests0", request_list);
         System.out.println("Sent List recieved: " + sent_list);
         intent.putExtra("Sent0", sent_list);
+    }
+
+
+    public boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

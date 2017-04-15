@@ -91,7 +91,6 @@ class ThreadClientHandler extends Thread {
 					userOut.setClientName(name);
 					userOut.setUsername(username);
 					userOut.setPassword(password);
-					userOut.setMessage(message);
 					
 					
 					if (operation.equals("Text")) {
@@ -101,6 +100,9 @@ class ThreadClientHandler extends Thread {
 					else if (operation.equals("Get Buddy List")) {
 						userOut = loadBuddyList(userOut);
 						sendToClient=true;
+					}
+					else if (operation.equals("Retrieve Messages")) {
+						System.out.printf("%s requested to retrieve messages with %s", clientUsername, message );
 					}
 					else if (operation.equals("Send Text")) {
 						userOut = sendMessage(userOut);

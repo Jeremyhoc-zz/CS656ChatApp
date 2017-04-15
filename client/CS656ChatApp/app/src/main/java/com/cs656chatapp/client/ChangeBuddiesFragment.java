@@ -35,12 +35,13 @@ import static com.cs656chatapp.client.MainActivity.sent;
 public class ChangeBuddiesFragment extends Fragment {
 
     ListView listView;
+
     Button friendButton,findButton,requestsButton,sentButton;
     UserObject user;
     String buddy_list, requests_list,sent_list;
     String friends[];
     EditText FindUsername;
-    String findUsername="",findUsernameOld, recipients;
+    String findUsername = "", findUsernameOld, recipients;
     Intent i;
     AlertDialog.Builder builder;
     CharSequence choices[] = new CharSequence[]{"Delete","Keep"};
@@ -54,7 +55,7 @@ public class ChangeBuddiesFragment extends Fragment {
 
     private BroadcastReceiver receiver;
 
-    public ChangeBuddiesFragment(){
+    public ChangeBuddiesFragment() {
 
     }
 
@@ -64,13 +65,15 @@ public class ChangeBuddiesFragment extends Fragment {
         intent = getActivity().getIntent();
         context = getActivity().getApplicationContext();
         rootView = inflater.inflate(R.layout.fragment_change_buddies, container, false);
-        listView = (ListView)rootView.findViewById(R.id.senderList);
+        listView = (ListView) rootView.findViewById(R.id.senderList);
 
         user = new UserObject();
+
         buddy_list = intent.getStringExtra("Buddies");
         requests_list = intent.getStringExtra("Requests");
         user = (UserObject) intent.getSerializableExtra("userObject");
         sent_list = intent.getStringExtra("Sent");
+
 
         System.out.println("CHANGE BUDDIES Username: " + user.getUsername());
         System.out.println("CHANGE BUDDIES Buddy List recieved: " + buddy_list);
@@ -95,6 +98,11 @@ public class ChangeBuddiesFragment extends Fragment {
                 }else if (operation.equals("New Friend Request")) {        //in use
                     requests.add(user.getMessage()); loadRequestList();
                     Toast.makeText(context, "New Friend Request from "+user.getMessage(), Toast.LENGTH_LONG).show();
+                }/*else if (operation.equals("Take List")) {
+                    Toast.makeText(getActivity().getApplicationContext(),"List Updated",Toast.LENGTH_SHORT).show();
+                    recipients = user.getMessage();
+                    System.out.println("Recipients recieved: "+recipients);
+                    if(!user.getMessage().equals("nobody")) loadSentList(recipients.split(","));
                 }/*else if (operation.equals("Sent Request Deleted")) {
                     Toast.makeText(getActivity().getApplicationContext(),"Request Deleted",Toast.LENGTH_SHORT).show();
                     getSentRequests();
@@ -105,7 +113,6 @@ public class ChangeBuddiesFragment extends Fragment {
             }
         };
 
-        System.out.println("HIT 2");
 
         requestsButton = (Button) rootView.findViewById(R.id.requests_button);
         requestsButton.setOnClickListener(new View.OnClickListener() {
@@ -131,7 +138,6 @@ public class ChangeBuddiesFragment extends Fragment {
                 loadSentList();
             }
         });
-
 
         findButton = (Button) rootView.findViewById(R.id.friend_request_button1);
         findButton.setOnClickListener(new View.OnClickListener() {
@@ -163,6 +169,7 @@ public class ChangeBuddiesFragment extends Fragment {
 
         return rootView;
     }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -177,17 +184,12 @@ public class ChangeBuddiesFragment extends Fragment {
         super.onStop();
     }
 
-    protected void deleteFriend(String recipientDel){
+    protected void deleteFriend(String recipientDel) {
         user.setMessage(recipientDel);
         user.setOperation("Delete Friend");
         user = serverConnection.sendToServer(user);
     }
 
-
-    /*protected void getSentRequests(){
-        user.setOperation("Get Sent List");
-        user = serverConnection.sendToServer(user);
-    }*/
 
     protected void loadRequestList(){
 
@@ -223,10 +225,9 @@ public class ChangeBuddiesFragment extends Fragment {
                             }
                         }
                     });builder.show();
-
-                }
-            });
-        }
+                    }
+        });
+    }
 
 
     protected void loadSentList(){
@@ -270,6 +271,7 @@ public class ChangeBuddiesFragment extends Fragment {
         listView = (ListView)rootView.findViewById(R.id.senderList);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,R.layout.request_list_item,R.id.req_text1,buddies);
+
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

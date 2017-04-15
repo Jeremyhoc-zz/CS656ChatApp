@@ -3,7 +3,6 @@ package com.cs656chatapp.client;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -52,27 +51,30 @@ public class MainActivity extends Activity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        if (buddies.size() > 0) buddies.clear();
+        if (requests.size() > 0) requests.clear();
         //--------------Get userObject and load buddy list-------------Get same UserObject from previous intent to load the buddy list.
         intent = getIntent();
-        buddies.clear(); requests.clear(); sent.clear();
-        user = (UserObject)intent.getSerializableExtra("userObject0");
+        buddies.clear();
+        requests.clear();
+        sent.clear();
+        user = (UserObject) intent.getSerializableExtra("userObject0");
         buddy_list = intent.getStringExtra("Buddies0");
         for (String bl : buddy_list.split(",")) buddies.add(bl);
-        if(buddies.contains("No friends")) buddies.clear();
+        if (buddies.contains("No friends")) buddies.clear();
         requests_list = intent.getStringExtra("Requests0");
         for (String req : requests_list.split(",")) requests.add(req);
-        if(requests.contains("none")) requests.clear();
+        if (requests.contains("none")) requests.clear();
         sent_list = intent.getStringExtra("Sent0");
         for (String sen : sent_list.split(",")) sent.add(sen);
-        if(sent.contains("nobody")) sent.clear();
+        if (sent.contains("nobody")) sent.clear();
         System.out.println("From MAINACTIVITY: username= " + user.getUsername() +
-                "\nBuddies= "+buddy_list+"\nRequests= "+requests_list+"\nSent= "+sent_list);
-        System.out.println("Also from Main:\nBuddies="+buddies+" Requests="+requests+" Sent="+sent);
+                "\nBuddies= " + buddy_list + "\nRequests= " + requests_list + "\nSent= " + sent_list);
+        System.out.println("Also from Main:\nBuddies=" + buddies + " Requests=" + requests + " Sent=" + sent);
         intent.putExtra("userObject", user);
-        intent.putExtra("Requests",requests_list);
-        intent.putExtra("Buddies",buddy_list);
-        intent.putExtra("Sent",sent_list);
+        intent.putExtra("Requests", requests_list);
+        intent.putExtra("Buddies", buddy_list);
+        intent.putExtra("Sent", sent_list);
 
         //getBuddyList();
         //--------------End buddy list load-------------
@@ -105,23 +107,23 @@ public class MainActivity extends Activity implements
                     responseToFriendRequest(message);
                 } else if (operation.equals("Take Buddy List")) {
                     buddy_list = user.getMessage();
-                    intent.putExtra("Buddies",buddy_list);
-                }  else if (operation.equals("Friend Logged On")) {
+                    intent.putExtra("Buddies", buddy_list);
+                } else if (operation.equals("Friend Logged On")) {
                     String friend = user.getMessage(); //Who to apply the action on
                     buddies.add(friend);
                 } else if (operation.equals("Friend Logged Off")) {
                     String friend = user.getMessage(); //Who to apply the action on
-                    for (Iterator<String> iterator = buddies.iterator(); iterator.hasNext();) {
+                    for (Iterator<String> iterator = buddies.iterator(); iterator.hasNext(); ) {
                         String string = iterator.next();
                         if (string.equalsIgnoreCase(friend)) {
                             // Remove the current element from the iterator and buddies.
                             iterator.remove();
                         }
                     }
-                }  else if (operation.equals("Update Buddy List")) {
+                } else if (operation.equals("Update Buddy List")) {
                     String friend = user.getMessage(); //Who to apply the action on
                     buddies.add(friend);
-                }  else if (operation.equals("Update Sent List")) {
+                } else if (operation.equals("Update Sent List")) {
                     sent.add(user.getMessage());
                 }
             }
@@ -135,9 +137,7 @@ public class MainActivity extends Activity implements
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-
     }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -238,11 +238,11 @@ public class MainActivity extends Activity implements
         bundle.putString("Buddies", buddy_list);
         bundle.putString("Requests", requests_list);
 
-        FragmentManager fragmentManager = getFragmentManager();
+/*        FragmentManager fragmentManager = getFragmentManager();
         fragmentManager
                 .beginTransaction()
                 .replace(R.id.container,
-                        PlaceholderFragment.newInstance(position + 1)).commit();
+                        PlaceholderFragment.newInstance(position + 1)).commit();*/
         if(position == 0) {
             BuddyListFragment buddyListFragment = new BuddyListFragment();
             buddyListFragment.setArguments(bundle);
@@ -253,15 +253,15 @@ public class MainActivity extends Activity implements
             getFragmentManager().beginTransaction().replace(R.id.frag_container,changeBuddiesFragment).commit();
         }if(position == 2) {
             ProfileFragment firstFragment = new ProfileFragment();
-            //  firstFragment.setArguments(getIntent().getExtras());
-            getFragmentManager().beginTransaction().replace(R.id.frag_container,firstFragment).commit();
-            // getFragmentManager().beginTransaction().add(R.id.frag_container, firstFragment).commit();
+                //  firstFragment.setArguments(getIntent().getExtras());
+                getFragmentManager().beginTransaction().replace(R.id.frag_container,firstFragment).addToBackStack("profileFrag").commit();
+               // getFragmentManager().beginTransaction().add(R.id.frag_container, firstFragment).commit();
         } if(position == 3) {
-            bundle.putString("Buddies", buddy_list);
-            bundle.putString("Requests", requests_list);
+/*            bundle.putString("Buddies", buddy_list);
+            bundle.putString("Requests", requests_list);*/
             ChangeBuddiesFragment changeBuddiesFragment = new ChangeBuddiesFragment();
             changeBuddiesFragment.setArguments(bundle);
-            getFragmentManager().beginTransaction().replace(R.id.frag_container,changeBuddiesFragment).commit();
+            getFragmentManager().beginTransaction().replace(R.id.frag_container,changeBuddiesFragment).addToBackStack("changeBuddiesFrag").commit();
         }
     }
 
