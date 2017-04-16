@@ -11,6 +11,7 @@ import com.cs656chatapp.common.UserObject;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.net.Socket;
 
 /**
@@ -57,7 +58,7 @@ public class serverListener extends Service {
         public void run() {
             Log.d("Logs: ", "running listenToServer");
             boolean done = false;
-            while (!done) {
+            if(!done) {
                 System.out.println("Waiting...");
                 try {
                     UserObject user = (UserObject) IN.readObject();
@@ -65,7 +66,7 @@ public class serverListener extends Service {
                     user.setPassword(savedUser.getPassword());
                     Thread t = new Thread(new performOperation(user));
                     t.start();
-                } catch (Exception e) {
+                    } catch (Exception e) {
                     e.printStackTrace();
                     done = true;
                 }

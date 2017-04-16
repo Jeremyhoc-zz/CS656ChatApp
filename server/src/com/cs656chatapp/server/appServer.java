@@ -104,7 +104,10 @@ class ThreadClientHandler extends Thread {
 					userOut.setClientName(name);
 					userOut.setUsername(username);
 					userOut.setPassword(password);
+					userOut.setOperation(operation);
+					userOut.setMessage(message);
 					sendToClient=true;
+
 					
 					if (operation.equals("Text")) {
 						userOut.setOperation("Text");
@@ -127,7 +130,7 @@ class ThreadClientHandler extends Thread {
 						userOut = sendVoice(userOut);
 					} 
 					else if (operation.equals("Friend Request")) {
-						userOut = friendRequestHandler(userIn/*, operation, message, username*/);
+						userOut = friendRequestHandler(userOut/*, operation, message, username*/);
 					}
 					else if (operation.equals("Delete Request")) {
 						deleteRequest(userOut);
@@ -141,6 +144,7 @@ class ThreadClientHandler extends Thread {
 					}
 					else if (operation.equals("Delete Friend")) {
 						   deleteFriend(userOut);
+						   sendToClient=false;
 					}
 					else if (operation.equals("Log Out")) {
 						logOut(userOut, username);
@@ -406,6 +410,7 @@ class ThreadClientHandler extends Thread {
 		        msgToStranger.setMessage(username);
 		        msgToStranger.setStatus(1);
 		        toStrangerSocket.writeUnshared(msgToStranger);
+		        toStrangerSocket.reset();
 		        toStrangerSocket.flush();
 				}
 			} else {
@@ -432,7 +437,8 @@ class ThreadClientHandler extends Thread {
 	        msgToStranger.setOperation("Response to Friend Request");
 	        msgToStranger.setMessage(user.getUsername() + "," + result);
 	        msgToStranger.setStatus(1);
-	        toStrangerSocket.writeObject(msgToStranger);
+	        toStrangerSocket.writeUnshared(msgToStranger);
+	        toStrangerSocket.reset();
 	        toStrangerSocket.flush();
 			}
 		}
@@ -510,6 +516,7 @@ class ThreadClientHandler extends Thread {
 			friendID= rs.getInt("user_id");	
 		}
 		//2-Delete from friends table
+		System.out.println("Ids: "+user.getUserID()+" "+friendID+" "+user.getMessage());
 		boolean ret=dbconn.executeUpdate("delete from friends where user_id="+user.getUserID()+" and friend_id="+friendID+" OR user_id="+friendID
 				+" and friend_id="+user.getUserID()+";");
 		if(ret)	System.out.println("Friend Removed Successfully");
