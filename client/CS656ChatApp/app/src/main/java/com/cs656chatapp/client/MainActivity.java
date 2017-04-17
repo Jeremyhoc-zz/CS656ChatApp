@@ -59,15 +59,18 @@ public class MainActivity extends Activity implements
         requests.clear();
         sent.clear();
         user = (UserObject) intent.getSerializableExtra("userObject0");
-        buddy_list = intent.getStringExtra("Buddies0");
-        for (String bl : buddy_list.split(",")) buddies.add(bl);
-        if (buddies.contains("No friends")) buddies.clear();
-        requests_list = intent.getStringExtra("Requests0");
-        for (String req : requests_list.split(",")) requests.add(req);
-        if (requests.contains("none")) requests.clear();
-        sent_list = intent.getStringExtra("Sent0");
-        for (String sen : sent_list.split(",")) sent.add(sen);
-        if (sent.contains("nobody")) sent.clear();
+        if(!(user.getMessage()).equals("New User")){
+            buddy_list = intent.getStringExtra("Buddies0");
+            for (String bl : buddy_list.split(",")) buddies.add(bl);
+            if (buddies.contains("No friends")) buddies.clear();
+            requests_list = intent.getStringExtra("Requests0");
+            for (String req : requests_list.split(",")) requests.add(req);
+            if (requests.contains("none")) requests.clear();
+            sent_list = intent.getStringExtra("Sent0");
+            for (String sen : sent_list.split(",")) sent.add(sen);
+            if (sent.contains("nobody")) sent.clear();
+        }
+
         System.out.println("From MAINACTIVITY: username= " + user.getUsername() +
                 "\nBuddies= " + buddy_list + "\nRequests= " + requests_list + "\nSent= " + sent_list);
         System.out.println("Also from Main:\nBuddies=" + buddies + " Requests=" + requests + " Sent=" + sent);
@@ -225,7 +228,7 @@ public class MainActivity extends Activity implements
 //        String acceptedOrRejected = msgSplit[1]; //Was it accepted or rejected?
 //        if (acceptedOrRejected.equals("accepted")) {
 //            addFriendToList(possiblyMyFriendName);
-//            //Remove friend request with a positive or make it green.
+//            //Remove friend request with a positive or make it green.sele
 //        } else if (acceptedOrRejected.equals("rejected")) {
 //            //Remove friend request with a negative or make it red.
 //        }

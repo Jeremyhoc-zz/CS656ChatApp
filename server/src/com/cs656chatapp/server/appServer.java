@@ -100,8 +100,6 @@ class ThreadClientHandler extends Thread {
 				    int status = userIn.getStatus();
 				    String operation = userIn.getOperation();
 				    String message = userIn.getMessage();
-				    //ObjectInputStream i = userIn.getObjectInputStream();
-				    //ObjectOutputStream o =userIn.getObjectOutputStream();
 					System.out.printf("Request coming in from %s for: %s\n", clientUsername, operation);
 
 					UserObject userOut = new UserObject();
@@ -214,21 +212,14 @@ class ThreadClientHandler extends Thread {
 	public void sendIt(UserObject user) throws SQLException, IOException {
 		String friendName=user.getMessage();
 		if(clients.containsKey(friendName)){
-			System.out.println("They're ONLINE!");
-			Socket stranger = clients.get(friendName);
-			OutputStream os = stranger.getOutputStream();
-			ObjectOutputStream toStrangerSocket = new ObjectOutputStream(os);
+			ObjectOutputStream toStrangerSocket = streams.get(friendName);
 			UserObject msgToFriend = new UserObject();
-			msgToFriend.setUsername(friendName);
-			msgToFriend = setInfo(msgToFriend);
 			msgToFriend.setOperation("New Chat!");
 			msgToFriend.setMessage(user.getUsername());
 			msgToFriend.setStatus(1);
 			toStrangerSocket.writeUnshared(msgToFriend);
-			//  toStrangerSocket.reset();
 			toStrangerSocket.flush();
-			//System.out.println("To other user:");
-			// printUser(msgToFriend);
+
 		}
 	}
 	
@@ -277,7 +268,7 @@ class ThreadClientHandler extends Thread {
 	public boolean createAccount(UserObject user) throws ClassNotFoundException, IOException, SQLException {
 		//Check if user already exists Process
 		rs = dbconn.executeSQL("select username from Users;");
-		boolean ret = false;
+		boolean ret;
 		while(rs.next())
 		{
 			if (user.getUsername().equals(rs.getString("username")))

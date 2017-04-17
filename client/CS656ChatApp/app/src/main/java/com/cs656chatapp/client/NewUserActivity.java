@@ -100,6 +100,8 @@ public class NewUserActivity extends AppCompatActivity {
                 */
                     Intent intent = new Intent();
                     intent.setClass(NewUserActivity.this, MainActivity.class);
+                    user.setMessage("New User");
+                    intent.putExtra("userObject0", user);
                     startActivity(intent);
                     NewUserActivity.this.finish();
                 } else if (user.getStatus() == 9) {
