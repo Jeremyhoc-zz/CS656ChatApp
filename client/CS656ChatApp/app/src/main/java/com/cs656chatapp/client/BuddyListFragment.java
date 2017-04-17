@@ -21,6 +21,8 @@ import com.cs656chatapp.common.UserObject;
 
 import java.util.ArrayList;
 
+import static com.cs656chatapp.client.MainActivity.requests;
+
 
 /**
  * Created by shereen on 4/12/2017.
@@ -52,28 +54,28 @@ public class BuddyListFragment extends ListFragment {
         buddy_list = intent.getStringExtra("Buddies");
         requests_list = intent.getStringExtra("Requests");
 
-      /*receiver = new BroadcastReceiver() {
+      receiver = new BroadcastReceiver() {
           @Override
           public void onReceive(Context context, Intent intent) {
               String operation = intent.getStringExtra(serverListener.serverOperation);
               String message = intent.getStringExtra(serverListener.serverMessage);
-              user.setMessage(message);
-              if (operation.equals("User Does Not Exist")) {
-                  //change this
-              }else if (operation.equals("Take Buddy List")) {
-                  buddy_list = user.getMessage();
-                  System.out.println("BuddyFrag: The buddy list from receiver is: " + buddy_list);
-              } else if (operation.equals("Delete Friend")) {
-
+              if (operation.equals("Response to Friend Request")) {
+                  System.out.println("Just from BUDDYLISTFRAG: message="+message);
+                  String[] mes = message.split(",");
+                  if(mes[1].equals("Accept")) {
+                  loadBuddyList();
+                  }
+              }else if(operation.equals("Remove from Buddy List")){
+                  loadBuddyList();
               }
           }
-      };*/
+      };
 
         buddyListView = (ListView) rootView.findViewById(R.id.buddyListView);
 
         System.out.println("BUDDY LIST Buddy List recieved: " + buddy_list);
         System.out.println("BUDDY LIST Requests received: " + requests_list);
-        if (!requests_list.equals("none"))
+        if (!requests.isEmpty())
             Toast.makeText(getActivity(), "You have requests!", Toast.LENGTH_LONG).show();
 /*      if(!(buddy_list == null)) {
           buddies = buddy_list.split(",");

@@ -51,6 +51,7 @@ public class serverListener extends Service {
             e.printStackTrace();
         }
         new Thread(listenToServer).start(); // Runnable listen to server
+    //    new Thread(refreshUpdates).start(); //Every 2 seconds get updates.
     }
 
     private Runnable listenToServer = new Runnable() {
@@ -58,7 +59,7 @@ public class serverListener extends Service {
         public void run() {
             Log.d("Logs: ", "running listenToServer");
             boolean done = false;
-            if(!done) {
+            while(!done) {
                 System.out.println("Waiting...");
                 try {
                     UserObject user = (UserObject) IN.readObject();
@@ -66,7 +67,7 @@ public class serverListener extends Service {
                     user.setPassword(savedUser.getPassword());
                     Thread t = new Thread(new performOperation(user));
                     t.start();
-                    } catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     done = true;
                 }

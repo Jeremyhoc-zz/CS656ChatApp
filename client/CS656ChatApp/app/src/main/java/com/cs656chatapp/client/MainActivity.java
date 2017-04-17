@@ -101,10 +101,13 @@ public class MainActivity extends Activity implements
                 } else if (operation.equals("Friend Logged Off")) {
                     removeFriendFromList(message);
                 } else if (operation.equals("New Friend Request")) {        //in use
-                    System.out.println("FINALLLLY!");
                     receiveFriendRequest(message);
                 } else if (operation.equals("Response to Friend Request")) {
                     responseToFriendRequest(message);
+                } else if (operation.equals("Remove from Buddy List")) {        //in use
+                    buddies.remove(message); Toast.makeText(MainActivity.this, message + " has removed you from their list.", Toast.LENGTH_LONG).show();
+                }else if (operation.equals("Remove from Request List")) {        //in use
+                    requests.remove(message); Toast.makeText(MainActivity.this, message + " has taken back their request.", Toast.LENGTH_LONG).show();
                 } else if (operation.equals("Take Buddy List")) {
                     buddy_list = user.getMessage();
                     intent.putExtra("Buddies", buddy_list);
@@ -200,26 +203,32 @@ public class MainActivity extends Activity implements
     }
 
     protected void receiveFriendRequest(String friend) {
-        if(!requests.contains("none")) requests.add(friend);
-        else{
-            requests.clear();
-            requests.add(friend);
-        }
+        requests.add(friend);
         Toast.makeText(MainActivity.this, "New Friend Request from "+friend, Toast.LENGTH_LONG).show();
        // String strangerUsername = friend;
         //Create an area where we can accept/reject the friendship request from strangerUsername
     }
 
     protected void responseToFriendRequest(String friend) {
-        String[] msgSplit = friend.split(",");
-        String possiblyMyFriendName = msgSplit[0]; //Who is responding
-        String acceptedOrRejected = msgSplit[1]; //Was it accepted or rejected?
-        if (acceptedOrRejected.equals("accepted")) {
-            addFriendToList(possiblyMyFriendName);
-            //Remove friend request with a positive or make it green.
-        } else if (acceptedOrRejected.equals("rejected")) {
-            //Remove friend request with a negative or make it red.
+        String[] mes = friend.split(",");
+        if(mes[1].equals("Accept")) {
+            sent.remove(mes[0]);
+            buddies.add(mes[0]);
+            Toast.makeText(MainActivity.this,mes[0]+" has accepted your Friend Request!", Toast.LENGTH_LONG).show();
+        }else{
+            sent.remove(mes[0]);
+            Toast.makeText(MainActivity.this,mes[0]+" has rejected your Friend Request.", Toast.LENGTH_LONG).show();
+
         }
+//        String[] msgSplit = friend.split(",");
+//        String possiblyMyFriendName = msgSplit[0]; //Who is responding
+//        String acceptedOrRejected = msgSplit[1]; //Was it accepted or rejected?
+//        if (acceptedOrRejected.equals("accepted")) {
+//            addFriendToList(possiblyMyFriendName);
+//            //Remove friend request with a positive or make it green.
+//        } else if (acceptedOrRejected.equals("rejected")) {
+//            //Remove friend request with a negative or make it red.
+//        }
         //Create an area where we can view whether friendship requests have been accepted or rejected.
     }
 

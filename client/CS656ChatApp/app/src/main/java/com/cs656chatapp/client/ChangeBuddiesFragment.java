@@ -76,14 +76,12 @@ public class ChangeBuddiesFragment extends Fragment {
 
 
         System.out.println("CHANGE BUDDIES Username: " + user.getUsername());
-        System.out.println("CHANGE BUDDIES Buddy List recieved: " + buddy_list);
+        System.out.println("CHANGE BUDDIES Buddy List received: " + buddy_list);
         System.out.println("CHANGE BUDDIES Requests received: " + requests_list);
         System.out.println("CHANGE BUDDIES Sent list received: " + sent_list);
         System.out.println("This too buddies: " + buddies);
         System.out.println("This too requests: " + requests);
         System.out.println("This too sent: " + sent);
-        System.out.println("HIT 0");
-        System.out.println("HIT 1");
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -96,13 +94,13 @@ public class ChangeBuddiesFragment extends Fragment {
                     Toast.makeText(getActivity().getApplicationContext(),user.getMessage(),Toast.LENGTH_LONG).show();
                     sent.add(findUsername); loadSentList();
                 }else if (operation.equals("New Friend Request")) {        //in use
-                    requests.add(user.getMessage()); loadRequestList();
-                    Toast.makeText(context, "New Friend Request from "+user.getMessage(), Toast.LENGTH_LONG).show();
-                }/*else if (operation.equals("Take List")) {
-                    Toast.makeText(getActivity().getApplicationContext(),"List Updated",Toast.LENGTH_SHORT).show();
-                    recipients = user.getMessage();
-                    System.out.println("Recipients recieved: "+recipients);
-                    if(!user.getMessage().equals("nobody")) loadSentList(recipients.split(","));
+                    loadRequestList();
+                }else if (operation.equals("Response to Friend Request")) {
+                   loadRequestList(); loadFriendsList();
+                }else if(operation.equals("Remove from Buddy List")){
+                    loadFriendsList();
+                }else if(operation.equals("Remove from Request List")){
+                    loadRequestList();
                 }/*else if (operation.equals("Sent Request Deleted")) {
                     Toast.makeText(getActivity().getApplicationContext(),"Request Deleted",Toast.LENGTH_SHORT).show();
                     getSentRequests();

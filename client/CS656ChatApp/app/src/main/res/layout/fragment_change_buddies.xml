@@ -17,7 +17,7 @@
         <EditText
             android:id="@+id/friend_request_username1"
             android:layout_width="0dp"
-            android:layout_weight="4"
+            android:layout_weight="7"
             android:layout_height="40dp"
             android:background="@drawable/textinputborder"
             android:ems="10"
@@ -31,13 +31,13 @@
         <Button
             android:id="@+id/friend_request_button1"
             android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:layout_height="40dp"
             android:background="@drawable/buttoninputborder"
             android:textStyle="bold"
             android:text="@string/search"
             android:textColor="@color/White"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:layout_marginBottom="5dp"/>
     </LinearLayout>
 

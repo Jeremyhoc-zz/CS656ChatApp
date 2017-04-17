@@ -27,7 +27,7 @@ public class serverConnection {
             mySocket = new Socket("192.168.56.1", 2597); //98.109.17.60 //10.0.2.2
             OUT = new ObjectOutputStream(mySocket.getOutputStream());
             IN = new ObjectInputStream(mySocket.getInputStream());
-           OUT.writeObject(user);
+            OUT.writeUnshared(user);
             OUT.flush();
             user = (UserObject) IN.readObject();
             if (user.getStatus() == 1) {
@@ -52,7 +52,7 @@ public class serverConnection {
                                 "\nOperation: "+user.getOperation()+"\nMessage: "+user.getMessage());
             //OUT.writeObject(user);
             OUT.writeUnshared(user);
-            OUT.reset();
+           // OUT.reset();
             OUT.flush();
         } catch (Exception e) {
             e.printStackTrace();
