@@ -8,6 +8,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="left"
+        android:layout_marginTop="10sp"
         android:layout_marginBottom="5dp"
         android:layout_marginRight="20dp"
         android:background="@drawable/textview"
@@ -15,6 +16,7 @@
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
         android:paddingTop="5dp"
-        android:text="Sampleleft"
-        android:textColor="#000" />
+        android:text="Sample Left"
+        android:textColor="#000"
+        android:textSize="20sp"/>
 </RelativeLayout>

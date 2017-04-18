@@ -10,11 +10,8 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.cs656chatapp.common.UserObject;
@@ -93,11 +90,12 @@ public class MainActivity extends Activity implements
                 if (operation.equals("Text")) {
                     Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG)
                             .show();
-                } else if (operation.equals("Text Received")) {
-                    interceptText(message);
-                } else if (operation.equals("Pic Received")) {
+                } else if (operation.contains("Receive Text:")) {
+                    String from = operation.split(":")[1];
+                    interceptText(from, message);
+                } else if (operation.equals("Receive Pic")) {
                     interceptPic(message);
-                } else if (operation.equals("Voice Received")) {
+                } else if (operation.equals("Receive Voice")) {
                     interceptVoice(message);
                 } else if (operation.equals("Friend Logged On")) {
                     addFriendToList(message);
@@ -131,6 +129,9 @@ public class MainActivity extends Activity implements
                     buddies.add(friend);
                 } else if (operation.equals("Update Sent List")) {
                     sent.add(user.getMessage());
+                } else if (operation.contains("Chat History:")) {
+                    String friendName = operation.split(":")[1];
+                    chatHistory(friendName, message);
                 }
             }
         };
@@ -184,10 +185,33 @@ public class MainActivity extends Activity implements
         user = serverConnection.sendToServer(user);
     }
 
-    protected void interceptText(String friend) {
-        String[] msgSplit = friend.split(",");
-        String friendName = msgSplit[0];
-        String message = msgSplit[1];
+    protected void chatHistory(String friendName, String message) {
+        String[] msgSplit = message.split(",,,");
+        System.out.printf("Chat History with %s\n", friendName);
+        int clientID = user.getUserID();
+
+        for (int i = 0; i < msgSplit.length - 1;) {
+            String from_uid = msgSplit[i++];
+            String message_type = msgSplit[i++];
+            String content = msgSplit[i++];
+            System.out.printf("from_uid=%s\nmessage_type=%s\ncontent=%s\n", from_uid, message_type, content);
+
+            boolean left = false;
+            if (Integer.parseInt(from_uid) == clientID) { //from_uid
+                left = true;
+            }
+            if (message_type.equals("text")) { //message_type
+                //post text content;
+            } else if (message_type.equals("pic")) {
+                //post pic content;
+            } else if (message_type.equals("voice")) {
+                //post voice content;
+            }
+        }
+    }
+
+    protected void interceptText(String from, String msg) {
+        System.out.printf("Incoming message from %s: %s\n", from, msg);
         //Update conversation between you and friend here with new message
     }
 
@@ -250,11 +274,6 @@ public class MainActivity extends Activity implements
         bundle.putString("Buddies", buddy_list);
         bundle.putString("Requests", requests_list);
 
-/*        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager
-                .beginTransaction()
-                .replace(R.id.container,
-                        PlaceholderFragment.newInstance(position + 1)).commit();*/
         if(position == 0) {
             BuddyListFragment buddyListFragment = new BuddyListFragment();
             buddyListFragment.setArguments(bundle);
@@ -265,12 +284,8 @@ public class MainActivity extends Activity implements
             getFragmentManager().beginTransaction().replace(R.id.frag_container,changeBuddiesFragment).commit();
         }if(position == 2) {
             ProfileFragment firstFragment = new ProfileFragment();
-                //  firstFragment.setArguments(getIntent().getExtras());
-                getFragmentManager().beginTransaction().replace(R.id.frag_container,firstFragment).addToBackStack("profileFrag").commit();
-               // getFragmentManager().beginTransaction().add(R.id.frag_container, firstFragment).commit();
+            getFragmentManager().beginTransaction().replace(R.id.frag_container,firstFragment).addToBackStack("profileFrag").commit();
         } if(position == 3) {
-/*            bundle.putString("Buddies", buddy_list);
-            bundle.putString("Requests", requests_list);*/
             ChangeBuddiesFragment changeBuddiesFragment = new ChangeBuddiesFragment();
             changeBuddiesFragment.setArguments(bundle);
             getFragmentManager().beginTransaction().replace(R.id.frag_container,changeBuddiesFragment).addToBackStack("changeBuddiesFrag").commit();
@@ -300,12 +315,6 @@ public class MainActivity extends Activity implements
         actionBar.setTitle(mTitle);
     }
 
-    /*public boolean onCreateBuddyList() {
-        String friends = user.getMessage();
-        String friend = friends.split(",");
-        loadBuddyList(friend);
-    }*/
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (!mNavigationDrawerFragment.isDrawerOpen()) {
@@ -334,16 +343,16 @@ public class MainActivity extends Activity implements
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
-        /**
+ /*   public static class PlaceholderFragment extends Fragment {
+        *//**
          * The fragment argument representing the section number for this
          * fragment.
-         */
+         *//*
         private static final String ARG_SECTION_NUMBER = "section_number";
 
-        /**
+        *//**
          * Returns a new instance of this fragment for the given section number.
-         */
+         *//*
         public static PlaceholderFragment newInstance(int sectionNumber) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
@@ -370,6 +379,6 @@ public class MainActivity extends Activity implements
                     ARG_SECTION_NUMBER));
         }
 
-    }
+    }*/
 
 }

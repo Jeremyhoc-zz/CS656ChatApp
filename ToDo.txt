@@ -1,9 +1,0 @@
-TO-DO
-1) The program GUI/flow layout which shouldn't be complex.
-2) The actual building of activities for #1
-3) The DB Building & SQL writing,
-
-
-COMPLETED
-4) Connect the App to the DB (https://developer.android.com/training/basics/data-storage/databases.html)
-5) Create login and make it work

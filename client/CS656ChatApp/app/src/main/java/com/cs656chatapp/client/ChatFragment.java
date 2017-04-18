@@ -39,39 +39,23 @@ public class ChatFragment extends Fragment {
                              Bundle savedInstanceState) {
         context = getActivity().getApplicationContext();
         rootView = inflater.inflate(R.layout.fragment_chat, container, false);
-        buttonSend = (Button) rootView.findViewById(R.id.chatSend);
+
         listView = (ListView) rootView.findViewById(R.id.msgview);
-        //super.onCreate(savedInstanceState);
 
         friendsName = getArguments().getString("friendName");
         UserObject user = new UserObject();
         user.setOperation("Retrieve Messages");
         user.setMessage(friendsName);
         serverConnection.sendToServer(user);
-
         chatArrayAdapter = new ChatArrayAdapter(context, R.layout.right);
+        chatArrayAdapter.add(new ChatMessage(true, "Message 1"));
+        chatArrayAdapter.add(new ChatMessage(false, "Message 2"));
+        chatArrayAdapter.add(new ChatMessage(false, "Message 3"));
+        chatArrayAdapter.add(new ChatMessage(true, "Message 4"));
         listView.setAdapter(chatArrayAdapter);
-
-        chatText = (EditText) rootView.findViewById(R.id.chatBox);
-        chatText.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    return sendChatMessage();
-                }
-                return false;
-            }
-        });
-        buttonSend.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                sendChatMessage();
-            }
-        });
-
         listView.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
-        listView.setAdapter(chatArrayAdapter);
+        listView.setSelection(chatArrayAdapter.getCount());
 
-        //to scroll the list view to bottom on data change
         chatArrayAdapter.registerDataSetObserver(new DataSetObserver() {
             @Override
             public void onChanged() {
@@ -80,12 +64,36 @@ public class ChatFragment extends Fragment {
             }
         });
 
+        chatText = (EditText) rootView.findViewById(R.id.msg);
+        chatText.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    return sendChatMessage();
+                }
+                return false;
+            }
+        });
+
+        buttonSend = (Button) rootView.findViewById(R.id.send);
+        buttonSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                if (!chatText.getText().toString().equals("")) {
+                    sendChatMessage();
+                }
+            }
+        });
+
         return rootView;
     }
 
-    private boolean sendChatMessage() {
+    protected boolean sendChatMessage() {
         chatArrayAdapter.add(new ChatMessage(side, chatText.getText().toString()));
-        System.out.println("New msg: " + chatText.getText().toString());
+        UserObject user = new UserObject();
+        user.setOperation("Send Text:" + friendsName);
+        user.setMessage(chatText.getText().toString());
+        serverConnection.sendToServer(user);
+
         chatText.setText("");
         side = !side;
         return true;
