@@ -12,7 +12,7 @@
         android:layout_marginTop="10sp"
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="20dp"
-        android:background="@drawable/textview"
+        android:background="@drawable/textview_right"
         android:paddingBottom="5dp"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"

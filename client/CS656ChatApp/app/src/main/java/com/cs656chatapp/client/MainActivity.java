@@ -7,6 +7,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
@@ -20,11 +22,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class MainActivity extends Activity implements
-        NavigationDrawerFragment.NavigationDrawerCallbacks  {
+        NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     Intent intent;
     UserObject user;
-    String buddy_list, requests_list,sent_list;
+    String buddy_list, requests_list, sent_list;
     Intent i;
 
     /**
@@ -56,18 +58,25 @@ public class MainActivity extends Activity implements
         requests.clear();
         sent.clear();
         user = (UserObject) intent.getSerializableExtra("userObject0");
-        if(!(user.getMessage()).equals("New User")){
-            buddy_list = intent.getStringExtra("Buddies0");
-            for (String bl : buddy_list.split(",")) buddies.add(bl);
-            if (buddies.contains("No friends")) buddies.clear();
-            requests_list = intent.getStringExtra("Requests0");
-            for (String req : requests_list.split(",")) requests.add(req);
-            if (requests.contains("none")) requests.clear();
-            sent_list = intent.getStringExtra("Sent0");
-            for (String sen : sent_list.split(",")) sent.add(sen);
-            if (sent.contains("nobody")) sent.clear();
+        try {
+            if (!(user.getMessage()).equals("New User")) {
+                buddy_list = intent.getStringExtra("Buddies0");
+                for (String bl : buddy_list.split(",")) buddies.add(bl);
+                if (buddies.contains("No friends")) buddies.clear();
+                requests_list = intent.getStringExtra("Requests0");
+                for (String req : requests_list.split(",")) requests.add(req);
+                if (requests.contains("none")) requests.clear();
+                sent_list = intent.getStringExtra("Sent0");
+                for (String sen : sent_list.split(",")) sent.add(sen);
+                if (sent.contains("nobody")) sent.clear();
+            }
+        } catch (Exception e) {
+            UserObject user = new UserObject();
+            user.setOperation("Log Out");
+            serverConnection.sendToServer(user);
+            this.stopService(i);
+            e.printStackTrace();
         }
-
         System.out.println("From MAINACTIVITY: username= " + user.getUsername() +
                 "\nBuddies= " + buddy_list + "\nRequests= " + requests_list + "\nSent= " + sent_list);
         System.out.println("Also from Main:\nBuddies=" + buddies + " Requests=" + requests + " Sent=" + sent);
@@ -106,9 +115,11 @@ public class MainActivity extends Activity implements
                 } else if (operation.equals("Response to Friend Request")) {
                     responseToFriendRequest(message);
                 } else if (operation.equals("Remove from Buddy List")) {        //in use
-                    buddies.remove(message); Toast.makeText(MainActivity.this, message + " has removed you from their list.", Toast.LENGTH_LONG).show();
-                }else if (operation.equals("Remove from Request List")) {        //in use
-                    requests.remove(message); Toast.makeText(MainActivity.this, message + " has taken back their request.", Toast.LENGTH_LONG).show();
+                    buddies.remove(message);
+                    Toast.makeText(MainActivity.this, message + " has removed you from their list.", Toast.LENGTH_LONG).show();
+                } else if (operation.equals("Remove from Request List")) {        //in use
+                    requests.remove(message);
+                    Toast.makeText(MainActivity.this, message + " has taken back their request.", Toast.LENGTH_LONG).show();
                 } else if (operation.equals("Take Buddy List")) {
                     buddy_list = user.getMessage();
                     intent.putExtra("Buddies", buddy_list);
@@ -145,6 +156,7 @@ public class MainActivity extends Activity implements
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
     }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -180,17 +192,19 @@ public class MainActivity extends Activity implements
     */
 
     //UNUSED
-    protected void getRequests(){
+    protected void getRequests() {
         user.setOperation("Get Request List");
         user = serverConnection.sendToServer(user);
     }
 
     protected void chatHistory(String friendName, String message) {
+        System.out.printf("%s",message);
+        ChatFragment fragment = (ChatFragment) getFragmentManager().findFragmentById(R.id.frag_container);
         String[] msgSplit = message.split(",,,");
         System.out.printf("Chat History with %s\n", friendName);
         int clientID = user.getUserID();
 
-        for (int i = 0; i < msgSplit.length - 1;) {
+        for (int i = 0; i < msgSplit.length - 1; ) {
             String from_uid = msgSplit[i++];
             String message_type = msgSplit[i++];
             String content = msgSplit[i++];
@@ -201,6 +215,7 @@ public class MainActivity extends Activity implements
                 left = true;
             }
             if (message_type.equals("text")) { //message_type
+                fragment.printChatText(left, content);
                 //post text content;
             } else if (message_type.equals("pic")) {
                 //post pic content;
@@ -212,13 +227,24 @@ public class MainActivity extends Activity implements
 
     protected void interceptText(String from, String msg) {
         System.out.printf("Incoming message from %s: %s\n", from, msg);
-        //Update conversation between you and friend here with new message
+        ChatFragment fragment = (ChatFragment) getFragmentManager().findFragmentById(R.id.frag_container);
+        if (fragment.getFriendName().equals(from)) {
+            fragment.printChatText(false, msg);
+        } else {
+            Toast.makeText(MainActivity.this, "New message from " + from, Toast.LENGTH_LONG).show();
+        }
     }
 
     protected void interceptPic(String friend) {
         String[] msgSplit = friend.split(",");
         String friendName = msgSplit[0];
         String message = msgSplit[1];
+        BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inDither = true;
+        opt.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        /*byte[] imageByteArray = getImageByteArray();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.length, opt);
+        imageView.setImageBitmap(bitmap);*/
         //Update conversation between you and friend here with new pic
     }
 
@@ -231,20 +257,20 @@ public class MainActivity extends Activity implements
 
     protected void receiveFriendRequest(String friend) {
         requests.add(friend);
-        Toast.makeText(MainActivity.this, "New Friend Request from "+friend, Toast.LENGTH_LONG).show();
-       // String strangerUsername = friend;
+        Toast.makeText(MainActivity.this, "New Friend Request from " + friend, Toast.LENGTH_LONG).show();
+        // String strangerUsername = friend;
         //Create an area where we can accept/reject the friendship request from strangerUsername
     }
 
     protected void responseToFriendRequest(String friend) {
         String[] mes = friend.split(",");
-        if(mes[1].equals("Accept")) {
+        if (mes[1].equals("Accept")) {
             sent.remove(mes[0]);
             buddies.add(mes[0]);
-            Toast.makeText(MainActivity.this,mes[0]+" has accepted your Friend Request!", Toast.LENGTH_LONG).show();
-        }else{
+            Toast.makeText(MainActivity.this, mes[0] + " has accepted your Friend Request!", Toast.LENGTH_LONG).show();
+        } else {
             sent.remove(mes[0]);
-            Toast.makeText(MainActivity.this,mes[0]+" has rejected your Friend Request.", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, mes[0] + " has rejected your Friend Request.", Toast.LENGTH_LONG).show();
 
         }
 //        String[] msgSplit = friend.split(",");
@@ -274,21 +300,24 @@ public class MainActivity extends Activity implements
         bundle.putString("Buddies", buddy_list);
         bundle.putString("Requests", requests_list);
 
-        if(position == 0) {
+        if (position == 0) {
             BuddyListFragment buddyListFragment = new BuddyListFragment();
             buddyListFragment.setArguments(bundle);
-            getFragmentManager().beginTransaction().replace(R.id.frag_container,buddyListFragment).commit();
-        } if(position == 1) {
+            getFragmentManager().beginTransaction().replace(R.id.frag_container, buddyListFragment).commit();
+        }
+        if (position == 1) {
             ChangeBuddiesFragment changeBuddiesFragment = new ChangeBuddiesFragment();
             changeBuddiesFragment.setArguments(bundle);
-            getFragmentManager().beginTransaction().replace(R.id.frag_container,changeBuddiesFragment).commit();
-        }if(position == 2) {
+            getFragmentManager().beginTransaction().replace(R.id.frag_container, changeBuddiesFragment).commit();
+        }
+        if (position == 2) {
             ProfileFragment firstFragment = new ProfileFragment();
-            getFragmentManager().beginTransaction().replace(R.id.frag_container,firstFragment).addToBackStack("profileFrag").commit();
-        } if(position == 3) {
+            getFragmentManager().beginTransaction().replace(R.id.frag_container, firstFragment).addToBackStack("profileFrag").commit();
+        }
+        if (position == 3) {
             ChangeBuddiesFragment changeBuddiesFragment = new ChangeBuddiesFragment();
             changeBuddiesFragment.setArguments(bundle);
-            getFragmentManager().beginTransaction().replace(R.id.frag_container,changeBuddiesFragment).addToBackStack("changeBuddiesFrag").commit();
+            getFragmentManager().beginTransaction().replace(R.id.frag_container, changeBuddiesFragment).addToBackStack("changeBuddiesFrag").commit();
         }
     }
 
@@ -345,14 +374,14 @@ public class MainActivity extends Activity implements
      */
  /*   public static class PlaceholderFragment extends Fragment {
         *//**
-         * The fragment argument representing the section number for this
-         * fragment.
-         *//*
+ * The fragment argument representing the section number for this
+ * fragment.
+ *//*
         private static final String ARG_SECTION_NUMBER = "section_number";
 
         *//**
-         * Returns a new instance of this fragment for the given section number.
-         *//*
+ * Returns a new instance of this fragment for the given section number.
+ *//*
         public static PlaceholderFragment newInstance(int sectionNumber) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();

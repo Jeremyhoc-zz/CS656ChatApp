@@ -17,8 +17,6 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.cs656chatapp.common.UserObject;
-
 import java.util.ArrayList;
 
 import static com.cs656chatapp.client.MainActivity.requests;
@@ -121,10 +119,6 @@ public class BuddyListFragment extends ListFragment {
                 bundle.putString("friendName", (String) buddyListView.getItemAtPosition(position));
 
                 ChatFragment chatFragment = new ChatFragment();
-                /*intent = new Intent();
-                intent.setClass(MainActivity.this, ChatFragment.class);
-                intent.putExtra("friendName", (String) buddyListView.getItemAtPosition(position));
-                startActivity(intent);*/
                 chatFragment.setArguments(bundle);
                 getFragmentManager().beginTransaction().replace(R.id.frag_container,chatFragment).addToBackStack("chatFrag").commit();
 /*                Toast.makeText(getActivity().getApplicationContext(),

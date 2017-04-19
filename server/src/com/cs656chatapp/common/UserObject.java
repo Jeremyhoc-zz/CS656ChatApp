@@ -22,15 +22,6 @@ public class UserObject implements Serializable {
     int status;
     String operation;
     String message;
-    List<List<String>> chatHistory = new ArrayList<List<String>>();
-    		
-    public List<List<String>> getChatHistory() {
-		return chatHistory;
-	}
-
-	public void setChatHistory(List<List<String>> chatHistory) {
-		this.chatHistory = chatHistory;
-	}
 
 	public UserObject() {
     }

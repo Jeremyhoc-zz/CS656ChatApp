@@ -126,10 +126,12 @@ class ThreadClientHandler extends Thread {
 						sendMessage(userIn, friendName, message);
 					} 
 					else if (operation.equals("Send Pic")) {
-						userOut = sendPicture(userOut);
+						String friendName = operation.split(":")[1];
+						sendPic(userIn, friendName, message);
 					} 
 					else if (operation.equals("Send Voice")) {
-						userOut = sendVoice(userOut);
+						String friendName = operation.split(":")[1];
+						sendVoice(userIn, friendName, message);
 					} 
 					else if (operation.equals("Friend Request")) {
 						userOut = friendRequestHandler(userOut/*, operation, message, username*/);
@@ -156,18 +158,14 @@ class ThreadClientHandler extends Thread {
 					} else {
 						System.out.printf("Empty object came from %s", clientUsername);
 					}
-					//System.out.println("Send back? "+sendToClient);
 					if(sendToClient){
-					//OUT.writeObject(userOut);
 		            OUT.writeUnshared(userOut);
 					OUT.flush();
-					//OUT.reset();
 					System.out.println("Response sent out.");
-					//printUser(userOut);
 					}
 				}
 				System.out.printf("%s has logged out\n", clientUsername);
-			} else if(found == 9){					//Username already exists
+			} else if(found == 9){ //Username already exists
 				System.out.println("User already exists so status = " + userIn.getStatus());
 				OUT.writeUnshared(userIn);
 				OUT.flush();
@@ -185,28 +183,7 @@ class ThreadClientHandler extends Thread {
 			e.printStackTrace();
 		}
 	}
-	
-/*	public void tester(){
-		System.out.println("Initial test:");
-		UserObject use = new UserObject();
-		for (Map.Entry<String, Socket> entry: clients.entrySet()){
-			String name = entry.getKey();
-			use.setUsername(name);
-			use = setInfo(use);
-			Socket stranger = findSocket(name);
-			OutputStream os = stranger.getOutputStream();
-	        ObjectOutputStream toStrangerSocket = new ObjectOutputStream(os);
-	        user.setUsername(strangerName);
-	        msgToStranger = setInfo(msgToStranger);
-	        msgToStranger.setOperation("New Friend Request");
-	        msgToStranger.setMessage(username);
-	        msgToStranger.setStatus(1);
-	        toStrangerSocket.writeUnshared(msgToStranger);
-	      //  toStrangerSocket.reset();
-	        toStrangerSocket.flush();
-		}
-	}*/
-	
+
 	public void retrieveChatHistory(UserObject user) throws SQLException, IOException {
 		String friendName=user.getMessage();
 		rs = dbconn.executeSQL("select user_id from users where username=\"" + friendName + "\";");
@@ -214,9 +191,9 @@ class ThreadClientHandler extends Thread {
 		if (rs.next()) friendID = rs.getInt("user_id");
 		String retrieveChatHistorySQL = "select from_uid, to_uid, message_type, content, sent_dt "
 				+ "from messages "
-				+ "where from_uid = " + user.getUserID() + " or from_uid = " + friendID
-				+ " and to_uid = " + user.getUserID() + " or to_uid = " + friendID + " "
-				+ "order by sent_dt ASC limit 16;";
+				+ "where (from_uid = " + user.getUserID() + " or from_uid = " + friendID + ") "
+				+ "and to_uid = " + user.getUserID() + " or to_uid = " + friendID + " "
+				+ "order by sent_dt ASC limit 31;";
 		System.out.println(retrieveChatHistorySQL);
 		rs = dbconn.executeSQL(retrieveChatHistorySQL);
 		String msg = "";
@@ -233,33 +210,7 @@ class ThreadClientHandler extends Thread {
 		client.writeUnshared(msgToClient);
 		client.flush();
 	}
-	
-	
-	public void sendIt(UserObject user) throws SQLException, IOException {
-		String friendName=user.getMessage();
-		if(streams.containsKey(friendName)) {
-			ObjectOutputStream toStrangerSocket = streams.get(friendName);
-			UserObject msgToFriend = new UserObject();
-			msgToFriend.setOperation("New Chat!");
-			msgToFriend.setMessage(user.getUsername());
-			msgToFriend.setStatus(1);
-			toStrangerSocket.writeUnshared(msgToFriend);
-			toStrangerSocket.flush();
-
-		}
-	}
-	
-/*	public void printUser(UserObject u){
-		System.out.println("UserId= "+u.getUserID()+" Username= "+u.getUsername());
-		System.out.println("Clientname= "+u.getName()+" Password= "+u.getPassword());
-		System.out.println("Operation= "+u.getOperation()+" Message= "+u.getMessage()+" hmm");
-		Socket stranger = findSocket(u.getUsername());
-		System.out.println("Socket= "+stranger);
-		System.out.println();
-		Socket another = clients.get(u.getUsername());
-		System.out.println("Again socket= "+another);
-	}*/
-	
+		
 	public UserObject checkCredentials(UserObject user) throws ClassNotFoundException, IOException, SQLException {
 		//Login Process
 		if(user.getStatus()==7) {
@@ -373,6 +324,34 @@ class ThreadClientHandler extends Thread {
 	
 	public UserObject sendMessage(UserObject user, String to, String message) throws ClassNotFoundException, IOException, SQLException {
 		//Add message to DB, Grab OutputStream of friend's username in variable streams, and send to that receiver.
+	  		String from = user.getUsername();
+			int fromID = user.getUserID();
+			rs = dbconn.executeSQL("select user_ID from users where username=\"" + to + "\";");
+			int toID = -1;
+			if (rs.next()) toID = rs.getInt("user_id");
+
+			//Add new entry in messages table
+			boolean ret=dbconn.executeUpdate("insert into messages (from_uid, to_uid, message_type, content) values ("+fromID+","+toID+","+"\"text\",\""+message+"\");");
+			if(!ret) System.out.println("Something wrong adding message to db");
+			else System.out.println("Message added to DB successfully.");
+			
+			//Send message out to the friend
+		  	if(streams.containsKey(to)) {
+		        UserObject sendMsg = new UserObject();
+		        sendMsg.setOperation("Receive Text:" + from);
+		        sendMsg.setMessage(message);
+		        sendMsg.setStatus(1);
+		        ObjectOutputStream sendTo = streams.get(to);
+		        sendTo.writeUnshared(sendMsg);
+		        sendTo.flush();
+		  	}        
+        
+        user.setStatus(1);
+        return user;
+	}
+	
+	private UserObject sendPic(UserObject user, String to, String message) throws SQLException, IOException {
+		//Add pic to DB, Grab OutputStream of friend's username in variable streams, and send to that receiver.
 	  	if(streams.containsKey(to)){
 	  		String from = user.getUsername();
 			int fromID = user.getUserID();
@@ -382,8 +361,8 @@ class ThreadClientHandler extends Thread {
 
 			//Add new entry in messages table
 			boolean ret=dbconn.executeUpdate("insert into messages (from_uid, to_uid, message_type, content) values ("+fromID+","+toID+","+"\"text\",\""+message+"\");");
-			if(!ret) System.out.println("Something wrong adding friend");
-			else System.out.println("Message sent successfully.");
+			if(!ret) System.out.println("Something wrong adding message to db");
+			else System.out.println("Message added to DB successfully.");
 			
 			//Send message out to the friend			
 	        UserObject sendMsg = new UserObject();
@@ -398,19 +377,10 @@ class ThreadClientHandler extends Thread {
         user.setStatus(1);
         return user;
 	}
+	
 
-	public UserObject sendPicture(UserObject user) {
-		//Add picture to DB, Grab OutputStream of friend's username in variable streams, and send to that receiver.
-		String message = user.getMessage();
-		user.setStatus(1);
-		return user;
-	}
-
-	public UserObject sendVoice(UserObject user) {
-		//Add voice to DB, Grab OutputStream of friend's username in variable streams, and send to that receiver.
-		String message = user.getMessage();
-		user.setStatus(1);
-		return user;
+	private void sendVoice(UserObject userIn2, String friendName, String message) {
+		// TODO Auto-generated method stub
 	}
 	
 	public UserObject getSentRequests(UserObject user) throws /*ClassNotFoundException, IOException, */SQLException{
@@ -428,34 +398,6 @@ class ThreadClientHandler extends Thread {
 		user.setStatus(1);
 		return user;
 	}
-	
-/*	public UserObject friendReqsHandler(UserObject user) throws ClassNotFoundException, IOException, SQLException{
-		// Check if username exists
-		rs = dbconn.executeSQL("select username,user_ID from users where username=\""+user.getMessage()+"\";");
-		String friendUserName="";
-		int friendID=-1;
-		while(rs.next())
-		{
-			friendUserName = rs.getString("username");
-			friendID=rs.getInt("user_id");
-		}
-		if(friendUserName.equals("")){
-			user.setOperation("User Does Not Exist");
-			user.setMessage("User "+user.getMessage()+" does not exist");
-			user.setStatus(1);
-			return user;
-		}
-		
-		//Add new entry in friendRequests table
-		boolean ret=dbconn.executeUpdate("insert into friendRequests values("+user.getUserID()+","+friendID+");");
-		if(!ret) System.out.println("Something wrong adding friend");
-		else System.out.println("Waiting for friend to accept");
-		
-		// Get sent list 
-		user = getSentRequests(user);
-		//function to check if friend is online
-		return user;
-	}*/
 
 	public boolean verifyStrangerExists(String strangerName, int clientID) throws SQLException {
 		// Check if username exists
@@ -517,44 +459,6 @@ class ThreadClientHandler extends Thread {
 		user.setStatus(1);
 		return user;
 	}
-	
-		
-/*	public UserObject answerRequest (UserObject user) throwsClassNotFoundException, IOException, SQLException {
-		String[] answer = user.getMessage().split(",");	
-		int id=-1;
-		//Get request sender ID
-		rs = dbconn.executeSQL("select user_id from users where username=\""+ answer[1] +"\";");
-		while(rs.next())
-		{
-			id = rs.getInt("user_id");
-		}
-		
-		if(answer[0].equals("Accept")){
-			// Add to Friends table
-			boolean ret=dbconn.executeUpdate("insert into friends values("+user.getUserID()+", "+id+");");
-			if(ret)	System.out.println("Friend Added Successfully");
-			else System.out.println("Something wrong adding Friend");
-		}
-		// Delete from friendRequests table
-		boolean ret=dbconn.executeUpdate("delete from friendRequests where receiver_id="+user.getUserID()+" AND sender_id="+id+";");
-		if(ret)	System.out.println("Request Deleted Successfully");
-		else System.out.println("Something wrong deleting Request");
-			
-		//Get remaining requests
-		rs = dbconn.executeSQL("select username from users where user_id IN "
-				+ "(select sender_id from friendRequests where receiver_id="+user.getUserID()+");");
-		String senderNames="";
-		while(rs.next())
-		{
-			senderNames+= rs.getString("username") + ",";;	
-		}
-		if(senderNames.isEmpty()) senderNames="none";
-		
-		user.setMessage(senderNames);
-		user.setOperation("Take Request List");
-		user.setStatus(1);
-		return user;
-	}*/
 	
 	public void deleteRequest(UserObject user) throws SQLException, IOException {
 		rs = dbconn.executeSQL("select user_id from users where username=\""+user.getMessage()+"\";");
@@ -625,18 +529,6 @@ class ThreadClientHandler extends Thread {
 			}
 		}
 	}
-	
-/*	public Socket findStream(String username) {
-		//Find a stream in the streams list to send message to
-		for (Iterator<String> iter = streams.keySet().iterator(); iter.hasNext(); ) {
-		    String key = iter.next();
-		    if (key.equalsIgnoreCase(username)) {
-		    	stream = streams.get(key);
-		    	return stream;
-		    }
-		}
-		return stream;
-	}*/
 	
 	private static Map<String, ObjectOutputStream> streams = new HashMap<String, ObjectOutputStream>();
 	dbConnection dbconn = null;

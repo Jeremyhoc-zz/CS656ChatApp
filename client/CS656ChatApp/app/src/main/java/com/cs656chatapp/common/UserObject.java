@@ -6,8 +6,6 @@
 package com.cs656chatapp.common;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 public class UserObject implements Serializable {
     /**
@@ -22,17 +20,6 @@ public class UserObject implements Serializable {
     int status;
     String operation;
     String message;
-    List<List<String>> chatHistory = new ArrayList<List<String>>();
-
-    public List<List<String>> getChatHistory() {
-        return chatHistory;
-    }
-
-    public void setChatHistory(List<List<String>> chatHistory) {
-        this.chatHistory = chatHistory;
-    }
-    public UserObject() {
-    }
 
     public int getUserID() {
         return userID;
