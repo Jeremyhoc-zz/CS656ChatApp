@@ -5,23 +5,21 @@
 
 package com.cs656chatapp.server;
 
-import com.cs656chatapp.common.UserObject;
-
 import java.io.EOFException;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+
+import com.cs656chatapp.common.UserObject;
 
 public class appServer {
 	public static void main(String[] args) { //throws ClassNotFoundException, SQLException {
@@ -125,9 +123,11 @@ class ThreadClientHandler extends Thread {
 						String friendName = operation.split(":")[1];
 						sendMessage(userIn, friendName, message);
 					} 
-					else if (operation.equals("Send Pic")) {
+					else if (operation.contains("Send Pic:")) {
+					    String picFile = userIn.getEncodedImage();
+						System.out.printf("appServ fileSize: %s\n", picFile.length());
 						String friendName = operation.split(":")[1];
-						sendPic(userIn, friendName, message);
+						sendPic(userIn, friendName, picFile);
 					} 
 					else if (operation.equals("Send Voice")) {
 						String friendName = operation.split(":")[1];
@@ -189,7 +189,7 @@ class ThreadClientHandler extends Thread {
 		rs = dbconn.executeSQL("select user_id from users where username=\"" + friendName + "\";");
 		int friendID = -1;
 		if (rs.next()) friendID = rs.getInt("user_id");
-		String retrieveChatHistorySQL = "select from_uid, to_uid, message_type, content, sent_dt "
+		String retrieveChatHistorySQL = "select from_uid, to_uid, message_type, content, picture, sent_dt "
 				+ "from messages "
 				+ "where (from_uid = " + user.getUserID() + " or from_uid = " + friendID + ") "
 				+ "and to_uid = " + user.getUserID() + " or to_uid = " + friendID + " "
@@ -197,15 +197,29 @@ class ThreadClientHandler extends Thread {
 		System.out.println(retrieveChatHistorySQL);
 		rs = dbconn.executeSQL(retrieveChatHistorySQL);
 		String msg = "";
+		String[] picFiles = new String[31];
+		int j = 0;
 		while (rs.next()) {
 			msg += Integer.toString(rs.getInt("from_uid")) + ",,,";
 			msg += rs.getString("message_type") + ",,,";
-			msg += rs.getString("content") + ",,,";
+			String msg_type = rs.getString("message_type");
+			if (msg_type.equals("text")) {
+				msg += rs.getString("content") + ",,,";
+			} else if (msg_type.equals("pic")) {
+				String encodedImage = rs.getString("picture");
+/*				byte [] array = blob.getBytes( 1, ( int ) blob.length() );
+			    String picFile = File.createTempFile("picFile-", ".binary", new File("."));*/
+/*			    FileOutputStream out = new FileOutputStream( picFile );
+			    out.write( array );
+			    out.close();*/
+			    picFiles[j] = encodedImage;
+			}
 		}
 		ObjectOutputStream client = streams.get(user.getUsername());
 		UserObject msgToClient = new UserObject();
 		msgToClient.setOperation("Chat History:" + friendName);
 		msgToClient.setMessage(msg);
+		msgToClient.setEncodedImages(picFiles);
 		msgToClient.setStatus(1);
 		client.writeUnshared(msgToClient);
 		client.flush();
@@ -321,38 +335,8 @@ class ThreadClientHandler extends Thread {
 		user.setStatus(1);
 		return user;
 	}
-	
-	public UserObject sendMessage(UserObject user, String to, String message) throws ClassNotFoundException, IOException, SQLException {
-		//Add message to DB, Grab OutputStream of friend's username in variable streams, and send to that receiver.
-	  		String from = user.getUsername();
-			int fromID = user.getUserID();
-			rs = dbconn.executeSQL("select user_ID from users where username=\"" + to + "\";");
-			int toID = -1;
-			if (rs.next()) toID = rs.getInt("user_id");
-
-			//Add new entry in messages table
-			boolean ret=dbconn.executeUpdate("insert into messages (from_uid, to_uid, message_type, content) values ("+fromID+","+toID+","+"\"text\",\""+message+"\");");
-			if(!ret) System.out.println("Something wrong adding message to db");
-			else System.out.println("Message added to DB successfully.");
-			
-			//Send message out to the friend
-		  	if(streams.containsKey(to)) {
-		        UserObject sendMsg = new UserObject();
-		        sendMsg.setOperation("Receive Text:" + from);
-		        sendMsg.setMessage(message);
-		        sendMsg.setStatus(1);
-		        ObjectOutputStream sendTo = streams.get(to);
-		        sendTo.writeUnshared(sendMsg);
-		        sendTo.flush();
-		  	}        
-        
-        user.setStatus(1);
-        return user;
-	}
-	
-	private UserObject sendPic(UserObject user, String to, String message) throws SQLException, IOException {
+	private UserObject sendMessage(UserObject user, String to, String message) throws SQLException, IOException {
 		//Add pic to DB, Grab OutputStream of friend's username in variable streams, and send to that receiver.
-	  	if(streams.containsKey(to)){
 	  		String from = user.getUsername();
 			int fromID = user.getUserID();
 			rs = dbconn.executeSQL("select user_ID from users where username=\"" + to + "\";");
@@ -364,7 +348,8 @@ class ThreadClientHandler extends Thread {
 			if(!ret) System.out.println("Something wrong adding message to db");
 			else System.out.println("Message added to DB successfully.");
 			
-			//Send message out to the friend			
+			//Send message out to the friend		
+		  	if(streams.containsKey(to)){
 	        UserObject sendMsg = new UserObject();
 	        sendMsg.setOperation("Receive Text:" + from);
 	        sendMsg.setMessage(message);
@@ -378,6 +363,35 @@ class ThreadClientHandler extends Thread {
         return user;
 	}
 	
+	public UserObject sendPic(UserObject user, String to, String picFile) throws ClassNotFoundException, IOException, SQLException {
+		//Add message to DB, Grab OutputStream of friend's username in variable streams, and send to that receiver.
+	  		String from = user.getUsername();
+			int fromID = user.getUserID();
+			rs = dbconn.executeSQL("select user_ID from users where username=\"" + to + "\";");
+			int toID = -1;
+			if (rs.next()) toID = rs.getInt("user_id");
+
+			//Add new entry in messages table
+			boolean ret=dbconn.executeUpdate("insert into messages (from_uid, to_uid, message_type, picture) values ("+fromID+","+toID+","+"pic,"+picFile+");");
+			if(!ret) System.out.println("Something wrong adding picture to db");
+			else System.out.println("Picture added to DB successfully.");
+			
+			//Send message out to the friend
+		  	if(streams.containsKey(to)) {
+		        UserObject sendMsg = new UserObject();
+		        sendMsg.setOperation("Receive Pic:" + from);
+		        sendMsg.setMessage("Picture");
+		        sendMsg.setEncodedImage(picFile);
+		        System.out.printf("sendPic filePic size is: %s\n", picFile.length());
+		        sendMsg.setStatus(1);
+		        ObjectOutputStream sendTo = streams.get(to);
+		        sendTo.writeUnshared(sendMsg);
+		        sendTo.flush();
+		  	}        
+        
+        user.setStatus(1);
+        return user;
+	}	
 
 	private void sendVoice(UserObject userIn2, String friendName, String message) {
 		// TODO Auto-generated method stub

@@ -6,8 +6,6 @@
 package com.cs656chatapp.common;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 public class UserObject implements Serializable {
     /**
@@ -22,8 +20,23 @@ public class UserObject implements Serializable {
     int status;
     String operation;
     String message;
+    String encodedImage;
+    String[] encodedImages;
 
-	public UserObject() {
+    public String[] getEncodedImages() {
+        return encodedImages;
+    }
+
+    public void setEncodedImages(String[] encodedImages) {
+        this.encodedImages = encodedImages;
+    }
+
+    public String getEncodedImage() {
+        return encodedImage;
+    }
+
+    public void setEncodedImage(String encodedImage) {
+        this.encodedImage = encodedImage;
     }
 
     public int getUserID() {

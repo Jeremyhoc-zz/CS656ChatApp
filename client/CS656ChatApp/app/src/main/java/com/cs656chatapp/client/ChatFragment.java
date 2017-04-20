@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ImageSpan;
+import android.util.Base64;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +26,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.cs656chatapp.common.UserObject;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * Created by Jeremy on 4/13/2017.
@@ -141,13 +144,24 @@ public class ChatFragment extends Fragment {
         return true;
     }
 
+    protected String getFriendName() {
+        return chatArrayAdapter.getFriendName();
+    }
+
     protected void printChatText(boolean left, String text) {
         chatArrayAdapter.add(new ChatMessage(left, text));
     }
 
-    protected String getFriendName() {
-        return chatArrayAdapter.getFriendName();
+    protected void printChatPic(boolean left, Bitmap imageBitmap) {
+        SpannableStringBuilder ssb = new SpannableStringBuilder("picture");
+        BitmapDrawable bmpDrawable = new BitmapDrawable(imageBitmap);
+        System.out.printf("Width: %s\nHeight: %s\n", bmpDrawable.getIntrinsicWidth(), bmpDrawable.getIntrinsicHeight());
+        bmpDrawable.setBounds(0, 0, bmpDrawable.getIntrinsicWidth()*10, bmpDrawable.getIntrinsicHeight()*10);
+        // create and set imagespan
+        ssb.setSpan(new ImageSpan(bmpDrawable, "picture", ImageSpan.ALIGN_BASELINE), 0, 7, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        chatArrayAdapter.add(new ChatPicture(left, ssb));
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -157,14 +171,18 @@ public class ChatFragment extends Fragment {
                 Bundle extras = data.getExtras();
                 System.out.println(extras.get("data"));
                 Bitmap imageBitmap = (Bitmap) extras.get("data");
+                printChatPic(true, imageBitmap);
 
-                SpannableStringBuilder ssb = new SpannableStringBuilder("picture");
-                BitmapDrawable bmpDrawable = new BitmapDrawable(imageBitmap);
-                System.out.printf("Width: %s\nHeight: %s\n", bmpDrawable.getIntrinsicWidth(), bmpDrawable.getIntrinsicHeight());
-                bmpDrawable.setBounds(0, 0, bmpDrawable.getIntrinsicWidth()*10, bmpDrawable.getIntrinsicHeight()*10);
-                // create and set imagespan
-                ssb.setSpan(new ImageSpan(bmpDrawable, "picture", ImageSpan.ALIGN_BASELINE), 0, 7, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                chatArrayAdapter.add(new ChatPicture(true, ssb));
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                imageBitmap.compress(Bitmap.CompressFormat.PNG, 0, baos);
+                byte[] imageBytes = baos.toByteArray();
+                String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+
+                UserObject user = new UserObject();
+                user.setOperation("Send Pic:" + friendsName);
+                user.setMessage("Picture");
+                user.setEncodedImage(encodedImage);
+                serverConnection.sendToServer(user);
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -11,7 +11,6 @@ import com.cs656chatapp.common.UserObject;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.StreamCorruptedException;
 import java.net.Socket;
 
 /**
@@ -51,7 +50,7 @@ public class serverListener extends Service {
             e.printStackTrace();
         }
         new Thread(listenToServer).start(); // Runnable listen to server
-    //    new Thread(refreshUpdates).start(); //Every 2 seconds get updates.
+        //    new Thread(refreshUpdates).start(); //Every 2 seconds get updates.
     }
 
     private Runnable listenToServer = new Runnable() {
@@ -59,7 +58,7 @@ public class serverListener extends Service {
         public void run() {
             Log.d("Logs: ", "running listenToServer");
             boolean done = false;
-            while(!done) {
+            while (!done) {
                 System.out.println("Waiting...");
                 try {
                     UserObject user = (UserObject) IN.readObject();
@@ -86,23 +85,30 @@ public class serverListener extends Service {
             String operation = this.user.getOperation();
             String message = this.user.getMessage();
             int status = this.user.getStatus();
-            Log.d("Logs: ", ": Operation is ... " + operation);
-            Log.d("Logs: ", ": Message is ... " + message);
-            Log.d("Logs: ", ": Status is ... " + status);
+            Log.d("Logs: ", ": Incoming operation is ... " + operation);
+            Log.d("Logs: ", ": Incoming message is ... " + message);
+            Log.d("Logs: ", ": Incoming status is ... " + status);
             if (status == 1)
-                sendResult(operation, message);
+                sendResult(operation, message, this.user);
         }
     }
 
     final static public String serverResult = "com.cs656chatapp.client.serverListener.REQUEST_PROCESSED";
     final static public String serverOperation = "com.cs656chatapp.client.serverListener.serverOperation";
     final static public String serverMessage = "com.cs656chatapp.client.serverListener.serverMessage";
+    final static public String serverEncodedImage = "com.cs656chatapp.client.serverListener.serverEncodedImage";
+    final static public String serverEncodedImages = "com.cs656chatapp.client.serverListener.serverEncodedImages";
 
-    public void sendResult(String operation, String message) {
+    public void sendResult(String operation, String message, UserObject user) {
         Intent intent = new Intent(serverResult);
-        if (operation != null && message != null) {
-            intent.putExtra(serverOperation, operation);
-            intent.putExtra(serverMessage, message);
+        intent.putExtra(serverOperation, operation);
+        intent.putExtra(serverMessage, message);
+        if (operation.contains("Chat History:")) {
+            String[] picFiles = user.getEncodedImages();
+            intent.putExtra(serverEncodedImages, picFiles);
+        } else if (operation.contains("Receive Pic:")) {
+            String picFile = user.getEncodedImage();
+            intent.putExtra(serverEncodedImage, picFile);
         }
         broadcaster.sendBroadcast(intent);
     }
