@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `Messages` (
   `to_uid` INT NOT NULL,
   `message_type` VARCHAR(45) NOT NULL,
   `content` varchar(100) NULL,
-  `picture` TEXT CHARACTER SET ascii NULL,
+  `picture` MEDIUMTEXT CHARACTER SET ascii NULL,
   `sent_dt` timestamp DEFAULT CURRENT_TIMESTAMP,
 
   PRIMARY KEY (`mes_id`),

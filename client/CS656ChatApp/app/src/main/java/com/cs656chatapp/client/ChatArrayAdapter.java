@@ -29,6 +29,7 @@ class ChatArrayAdapter extends ArrayAdapter {
     }
 
     public void add(ChatPicture object) {
+        //System.out.printf("sharpic%s", i);
         add(new ChatMessage(object.left, ("sharepic" + i++)));
         chatPictureList.add(object);
         super.add(object);
@@ -70,6 +71,9 @@ class ChatArrayAdapter extends ArrayAdapter {
         }
         chatText = (TextView) row.findViewById(R.id.msgr);
         if (chatMessageObj.message.contains("sharepic")) {
+            System.out.printf("Before: %s", position);
+            position = Integer.parseInt(chatMessageObj.message.replace("sharepic", ""));
+            System.out.printf("After: %s", position);
             ChatPicture chatPictureObj = getPictureItem(position);
             chatText.setText(chatPictureObj.picture);
         } else {

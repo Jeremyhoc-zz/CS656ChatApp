@@ -50,7 +50,6 @@ public class serverListener extends Service {
             e.printStackTrace();
         }
         new Thread(listenToServer).start(); // Runnable listen to server
-        //    new Thread(refreshUpdates).start(); //Every 2 seconds get updates.
     }
 
     private Runnable listenToServer = new Runnable() {
@@ -104,11 +103,11 @@ public class serverListener extends Service {
         intent.putExtra(serverOperation, operation);
         intent.putExtra(serverMessage, message);
         if (operation.contains("Chat History:")) {
-            String[] picFiles = user.getEncodedImages();
-            intent.putExtra(serverEncodedImages, picFiles);
+            String[] encodedImages = user.getEncodedImages();
+            intent.putExtra(serverEncodedImages, encodedImages);
         } else if (operation.contains("Receive Pic:")) {
-            String picFile = user.getEncodedImage();
-            intent.putExtra(serverEncodedImage, picFile);
+            String encodedImage = user.getEncodedImage();
+            intent.putExtra(serverEncodedImage, encodedImage);
         }
         broadcaster.sendBroadcast(intent);
     }

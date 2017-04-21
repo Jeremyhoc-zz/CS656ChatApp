@@ -125,7 +125,7 @@ class ThreadClientHandler extends Thread {
 					} 
 					else if (operation.contains("Send Pic:")) {
 					    String picFile = userIn.getEncodedImage();
-						System.out.printf("appServ fileSize: %s\n", picFile.length());
+						//System.out.printf("appServ fileSize: %s\n", picFile.length());
 						String friendName = operation.split(":")[1];
 						sendPic(userIn, friendName, picFile);
 					} 
@@ -194,32 +194,26 @@ class ThreadClientHandler extends Thread {
 				+ "where (from_uid = " + user.getUserID() + " or from_uid = " + friendID + ") "
 				+ "and to_uid = " + user.getUserID() + " or to_uid = " + friendID + " "
 				+ "order by sent_dt ASC limit 31;";
-		System.out.println(retrieveChatHistorySQL);
 		rs = dbconn.executeSQL(retrieveChatHistorySQL);
 		String msg = "";
-		String[] picFiles = new String[31];
+		String[] encodedImages = new String[31];
 		int j = 0;
 		while (rs.next()) {
 			msg += Integer.toString(rs.getInt("from_uid")) + ",,,";
-			msg += rs.getString("message_type") + ",,,";
 			String msg_type = rs.getString("message_type");
+			msg += msg_type + ",,,";
 			if (msg_type.equals("text")) {
 				msg += rs.getString("content") + ",,,";
 			} else if (msg_type.equals("pic")) {
 				String encodedImage = rs.getString("picture");
-/*				byte [] array = blob.getBytes( 1, ( int ) blob.length() );
-			    String picFile = File.createTempFile("picFile-", ".binary", new File("."));*/
-/*			    FileOutputStream out = new FileOutputStream( picFile );
-			    out.write( array );
-			    out.close();*/
-			    picFiles[j] = encodedImage;
+			    encodedImages[j++] = encodedImage;
 			}
 		}
 		ObjectOutputStream client = streams.get(user.getUsername());
 		UserObject msgToClient = new UserObject();
 		msgToClient.setOperation("Chat History:" + friendName);
 		msgToClient.setMessage(msg);
-		msgToClient.setEncodedImages(picFiles);
+		msgToClient.setEncodedImages(encodedImages);
 		msgToClient.setStatus(1);
 		client.writeUnshared(msgToClient);
 		client.flush();
@@ -370,9 +364,9 @@ class ThreadClientHandler extends Thread {
 			rs = dbconn.executeSQL("select user_ID from users where username=\"" + to + "\";");
 			int toID = -1;
 			if (rs.next()) toID = rs.getInt("user_id");
-
+			//System.out.printf("sendPic picFile contents: %s", picFile);
 			//Add new entry in messages table
-			boolean ret=dbconn.executeUpdate("insert into messages (from_uid, to_uid, message_type, picture) values ("+fromID+","+toID+","+"pic,"+picFile+");");
+			boolean ret=dbconn.executeUpdate("insert into messages (from_uid, to_uid, message_type, picture) values ("+fromID+","+toID+",'pic','"+picFile+"');");
 			if(!ret) System.out.println("Something wrong adding picture to db");
 			else System.out.println("Picture added to DB successfully.");
 			
@@ -382,7 +376,7 @@ class ThreadClientHandler extends Thread {
 		        sendMsg.setOperation("Receive Pic:" + from);
 		        sendMsg.setMessage("Picture");
 		        sendMsg.setEncodedImage(picFile);
-		        System.out.printf("sendPic filePic size is: %s\n", picFile.length());
+		        //System.out.printf("sendPic filePic size is: %s\n", picFile.length());
 		        sendMsg.setStatus(1);
 		        ObjectOutputStream sendTo = streams.get(to);
 		        sendTo.writeUnshared(sendMsg);

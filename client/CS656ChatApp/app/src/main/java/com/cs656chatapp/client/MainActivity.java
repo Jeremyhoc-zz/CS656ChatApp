@@ -19,7 +19,6 @@ import android.widget.Toast;
 
 import com.cs656chatapp.common.UserObject;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -105,21 +104,9 @@ public class MainActivity extends Activity implements
                     String from = operation.split(":")[1];
                     interceptText(from, message);
                 } else if (operation.contains("Receive Pic:")) {
-/*                    Bundle bundle = intent.getExtras();
-                    if (bundle != null) {
-                        for (String key : bundle.keySet()) {
-                            Object value = bundle.get(key);
-                            Log.d(TAG, String.format("%s %s (%s)", key,
-                                    value.toString(), value.getClass().getName()));
-                            if (value.getClass().getName().toString().equals("java.io.File")) {
-                                System.out.printf("ITS WORKING");
-                                break;
-                            }
-                        }
-                    }*/
-                    String picFile = intent.getStringExtra(serverListener.serverEncodedImage);
+                    String encodedImage = intent.getStringExtra(serverListener.serverEncodedImage);
                     String from = operation.split(":")[1];
-                    interceptPic(from, picFile);
+                    interceptPic(from, encodedImage);
                 } else if (operation.equals("Receive Voice")) {
                     interceptVoice(message);
                 } else if (operation.equals("Friend Logged On")) {
@@ -157,9 +144,9 @@ public class MainActivity extends Activity implements
                 } else if (operation.equals("Update Sent List")) {
                     sent.add(user.getMessage());
                 } else if (operation.contains("Chat History:")) {
-                    File picFiles[] = (File[]) intent.getExtras().get("serverPicFiles");
+                    String encodedImages[] = intent.getStringArrayExtra(serverListener.serverEncodedImages);
                     String friendName = operation.split(":")[1];
-                    chatHistory(friendName, message, picFiles);
+                    chatHistory(friendName, message, encodedImages);
                 }
             }
         };
@@ -214,9 +201,9 @@ public class MainActivity extends Activity implements
         user = serverConnection.sendToServer(user);
     }
 
-    protected void chatHistory(String friendName, String message, File[] picFiles) {
+    protected void chatHistory(String friendName, String message, String[] encodedImages) {
         if (message != null) {
-            System.out.printf("%s", message);
+            System.out.printf("%s\n", message);
             ChatFragment fragment = (ChatFragment) getFragmentManager().findFragmentById(R.id.frag_container);
             String[] msgSplit = message.split(",,,");
             System.out.printf("Chat History with %s\n", friendName);
@@ -237,9 +224,9 @@ public class MainActivity extends Activity implements
                     fragment.printChatText(left, content);
                 } else if (message_type.equals("pic")) {
                     //post pic content
-                    File picFile = picFiles[j++];
-                    String filePath = picFile.getPath();
-                    Bitmap bitmap = BitmapFactory.decodeFile(filePath);
+                    String encodedImage = encodedImages[j++];
+                    byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
                     fragment.printChatPic(left, bitmap);
                 } else if (message_type.equals("voice")) {
                     //post voice content
@@ -258,12 +245,12 @@ public class MainActivity extends Activity implements
         }
     }
 
-    protected void interceptPic(String from, String picFile) {
+    protected void interceptPic(String from, String encodedImage) {
         //Update conversation between you and friend here with new pic
-        System.out.printf("Incoming picture from %s\n%s\n", from, picFile);
+        System.out.printf("Incoming picture from %s\n%s\n", from, encodedImage);
         ChatFragment fragment = (ChatFragment) getFragmentManager().findFragmentById(R.id.frag_container);
         if (fragment.getFriendName().equals(from)) {
-            byte[] decodedString = Base64.decode(picFile, Base64.DEFAULT);
+            byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
             Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
             fragment.printChatPic(false, bitmap);
         } else {
@@ -272,17 +259,15 @@ public class MainActivity extends Activity implements
     }
 
     protected void interceptVoice(String friend) {
+        //Update conversation between you and friend here with new voice
         String[] msgSplit = friend.split(",");
         String friendName = msgSplit[0];
         String message = msgSplit[1];
-        //Update conversation between you and friend here with new voice
     }
 
     protected void receiveFriendRequest(String friend) {
         requests.add(friend);
         Toast.makeText(MainActivity.this, "New Friend Request from " + friend, Toast.LENGTH_LONG).show();
-        // String strangerUsername = friend;
-        //Create an area where we can accept/reject the friendship request from strangerUsername
     }
 
     protected void responseToFriendRequest(String friend) {
@@ -331,17 +316,17 @@ public class MainActivity extends Activity implements
         if (position == 1) {
             ChangeBuddiesFragment changeBuddiesFragment = new ChangeBuddiesFragment();
             changeBuddiesFragment.setArguments(bundle);
-            getFragmentManager().beginTransaction().replace(R.id.frag_container, changeBuddiesFragment).commit();
+            getFragmentManager().beginTransaction().replace(R.id.frag_container, changeBuddiesFragment).addToBackStack("requestFrag").commit();
         }
         if (position == 2) {
             ProfileFragment firstFragment = new ProfileFragment();
             getFragmentManager().beginTransaction().replace(R.id.frag_container, firstFragment).addToBackStack("profileFrag").commit();
         }
-        if (position == 3) {
+/*        if (position == 3) {
             ChangeBuddiesFragment changeBuddiesFragment = new ChangeBuddiesFragment();
             changeBuddiesFragment.setArguments(bundle);
             getFragmentManager().beginTransaction().replace(R.id.frag_container, changeBuddiesFragment).addToBackStack("changeBuddiesFrag").commit();
-        }
+        }*/
     }
 
     public void onSectionAttached(int number) {
@@ -386,9 +371,11 @@ public class MainActivity extends Activity implements
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+/*
         if (id == R.id.action_settings) {
             return true;
         }
+*/
         return super.onOptionsItemSelected(item);
     }
 

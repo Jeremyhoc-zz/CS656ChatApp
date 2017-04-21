@@ -121,8 +121,8 @@ public class NavigationDrawerFragment extends Fragment {
                 android.R.id.text1, new String[]{
                 getString(R.string.title_section1),
                 getString(R.string.title_section2),
-                getString(R.string.title_section3),
-                getString(R.string.title_section4)}));
+                getString(R.string.title_section3)/*,
+                getString(R.string.title_section4)*/}));
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
     }
@@ -282,7 +282,7 @@ public class NavigationDrawerFragment extends Fragment {
             return true;
         }
 
-        if (item.getItemId() == R.id.action_example) {
+/*        if (item.getItemId() == R.id.action_example) {
             try {
                 UserObject user = new UserObject();
                 user.setOperation("Text");
@@ -291,7 +291,7 @@ public class NavigationDrawerFragment extends Fragment {
                 Log.d("Jet", e.getMessage());
             }
             return true;
-        }
+        }*/
 
         if (item.getItemId() == R.id.log_out) {
             try {
