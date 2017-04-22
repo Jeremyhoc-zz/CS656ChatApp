@@ -117,11 +117,12 @@ class ThreadClientHandler extends Thread {
 						userOut = loadBuddyList(userOut);
 					}
 					else if (operation.equals("Retrieve Messages")) {
-						retrieveChatHistory(userOut);
+						userOut = retrieveChatHistory(userOut);
 					}
 					else if (operation.contains("Send Text:")) {
 						String friendName = operation.split(":")[1];
 						sendMessage(userIn, friendName, message);
+						sendToClient=false;
 					} 
 					else if (operation.contains("Send Pic:")) {
 					    String picFile = userIn.getEncodedImage();
@@ -184,7 +185,7 @@ class ThreadClientHandler extends Thread {
 		}
 	}
 
-	public void retrieveChatHistory(UserObject user) throws SQLException, IOException {
+	public UserObject retrieveChatHistory(UserObject user) throws SQLException, IOException {
 		String friendName=user.getMessage();
 		rs = dbconn.executeSQL("select user_id from users where username=\"" + friendName + "\";");
 		int friendID = -1;
@@ -209,7 +210,12 @@ class ThreadClientHandler extends Thread {
 			    encodedImages[j++] = encodedImage;
 			}
 		}
-		ObjectOutputStream client = streams.get(user.getUsername());
+		user.setOperation("Chat History:" + friendName);
+		user.setMessage(msg);
+		user.setEncodedImages(encodedImages);
+		user.setStatus(1);
+		return user;
+	/*	ObjectOutputStream client = streams.get(user.getUsername());
 		UserObject msgToClient = new UserObject();
 		msgToClient.setOperation("Chat History:" + friendName);
 		msgToClient.setMessage(msg);
@@ -217,6 +223,7 @@ class ThreadClientHandler extends Thread {
 		msgToClient.setStatus(1);
 		client.writeUnshared(msgToClient);
 		client.flush();
+		*/
 	}
 		
 	public UserObject checkCredentials(UserObject user) throws ClassNotFoundException, IOException, SQLException {

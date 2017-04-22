@@ -55,9 +55,10 @@ public class ChatFragment extends Fragment {
     private String friendsName;
     private boolean side = false;
     private static String root = null;
-    private static String imageFolderPath = null;
-    private String imageName = null;
+    private static String imageFolderPath = null, voiceFolderPath=null;
+    private String imageName = null, voiceName=null;
     private static Uri fileUri = null;
+    private Bitmap imageBitmap;
 
     // Storage Permissions
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -149,7 +150,31 @@ public class ChatFragment extends Fragment {
                             photoPickerIntent.setType("image/*");
                             startActivityForResult(photoPickerIntent, 1);
                         } else if (which == 2) {
-                            //TODO: Voice recording here
+
+                            ChatRecorder chatRecorder = new ChatRecorder();
+                            getFragmentManager().beginTransaction().add(R.id.frag_container,chatRecorder).addToBackStack("chatRec").commit();
+
+                            /*
+                            root = Environment.getExternalStorageDirectory().toString()
+                                    + "/cs656chatapp";
+
+                            // Creating folders for Image
+                            voiceFolderPath = root + "/saved_voice";
+                            File voiceFolder = new File(voiceFolderPath);
+                            voiceFolder.mkdirs();
+
+                            // Generating file name
+                            voiceName = "to" + friendsName + ".mp3";
+
+                            // Creating image here
+                            File voice = new File(voiceFolderPath, voiceName);
+
+                            fileUri = Uri.fromFile(voice);
+
+                            Intent voiceRecorderIntent = new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION);
+                            voiceRecorderIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                            startActivityForResult(voiceRecorderIntent, 2);
+                            */
                         }
                     }
                 });
@@ -215,12 +240,28 @@ public class ChatFragment extends Fragment {
         chatArrayAdapter.add(new ChatPicture(left, ssb));
     }
 
+    protected void forPictures(){
+        printChatPic(true, imageBitmap);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        imageBitmap.compress(Bitmap.CompressFormat.PNG, 0, baos);
+        byte[] imageBytes = baos.toByteArray();
+        String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        System.out.printf("encodedImage size: %s\n", encodedImage.length());
+
+        UserObject user = new UserObject();
+        user.setOperation("Send Pic:" + friendsName);
+        user.setMessage("Picture");
+        user.setEncodedImage(encodedImage);
+        serverConnection.sendToServer(user);
+
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
             try {
-                Bitmap imageBitmap = null;
+                imageBitmap = null;
                 if (requestCode == 0) { //Took a picture
                     try {
                         GetImageThumbnail getImageThumbnail = new GetImageThumbnail();
@@ -231,12 +272,17 @@ public class ChatFragment extends Fragment {
                         e.printStackTrace();
                     }
                     System.out.printf("imageBitmap: %s\nimageBitmap size: %s\n", imageBitmap, imageBitmap.getByteCount());
+                    forPictures();
                 } else if (requestCode == 1) { //Uploading a picture
                     Uri pickedImage = data.getData();
                     GetImageThumbnail getImageThumbnail = new GetImageThumbnail();
                     imageBitmap = getImageThumbnail.getThumbnail(pickedImage, context);
+                    forPictures();
+                } else if (requestCode == 2){
+                    Uri soundRecorded = data.getData();
                 }
-                printChatPic(true, imageBitmap);
+
+              /*  printChatPic(true, imageBitmap);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 imageBitmap.compress(Bitmap.CompressFormat.PNG, 0, baos);
                 byte[] imageBytes = baos.toByteArray();
@@ -248,6 +294,7 @@ public class ChatFragment extends Fragment {
                 user.setMessage("Picture");
                 user.setEncodedImage(encodedImage);
                 serverConnection.sendToServer(user);
+                */
             } catch (Exception e) {
                 e.printStackTrace();
             }

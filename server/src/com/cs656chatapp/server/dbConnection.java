@@ -22,7 +22,7 @@ public class dbConnection {
 
 	public dbConnection() throws ClassNotFoundException, SQLException
 	{
-		connectToDatabase("Jeremy", "development");
+		connectToDatabase("root", "fishies");
 	}
 
 	public boolean connectToDatabase(String username, String password) throws SQLException, ClassNotFoundException

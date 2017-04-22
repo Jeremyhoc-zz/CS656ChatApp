@@ -78,7 +78,6 @@ public class BuddyListFragment extends ListFragment {
 /*      if(!(buddy_list == null)) {
           buddies = buddy_list.split(",");
       }*/
-        System.out.println("FROM BUDDY LIST FRAG: " + buddy_list);
 
         return rootView;
     }

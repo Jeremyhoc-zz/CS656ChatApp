@@ -107,8 +107,9 @@ public class MainActivity extends Activity implements
                     String encodedImage = intent.getStringExtra(serverListener.serverEncodedImage);
                     String from = operation.split(":")[1];
                     interceptPic(from, encodedImage);
-                } else if (operation.equals("Receive Voice")) {
-                    interceptVoice(message);
+                } else if (operation.contains("Receive Voice")) {
+                    String from = operation.split(":")[1];
+                    interceptVoice(from, message);
                 } else if (operation.equals("Friend Logged On")) {
                     addFriendToList(message);
                 } else if (operation.equals("Friend Logged Off")) {
@@ -258,11 +259,18 @@ public class MainActivity extends Activity implements
         }
     }
 
-    protected void interceptVoice(String friend) {
+    protected void interceptVoice(String from,String encodedVoice) {
         //Update conversation between you and friend here with new voice
-        String[] msgSplit = friend.split(",");
-        String friendName = msgSplit[0];
-        String message = msgSplit[1];
+        System.out.printf("Incoming picture from %s\n%s\n", from, encodedVoice);
+        ChatFragment fragment = (ChatFragment) getFragmentManager().findFragmentById(R.id.frag_container);
+        if (fragment.getFriendName().equals(from)) {
+            //byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
+            //Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+           // fragment.printChatPic(false, bitmap);
+        } else {
+            Toast.makeText(MainActivity.this, "New message from " + from, Toast.LENGTH_LONG).show();
+        }
+
     }
 
     protected void receiveFriendRequest(String friend) {
