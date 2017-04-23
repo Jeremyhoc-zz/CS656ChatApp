@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <ImageButton
+        android:id="@+id/voicel"
+        android:layout_width="150dp"
+        android:layout_height="70dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/play_img"
+        android:layout_gravity="left"
+        android:layout_marginTop="10sp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginRight="20dp"
+        android:background="@drawable/textview_left"
+        android:paddingBottom="5dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="5dp"/>
+
+</LinearLayout>

@@ -19,8 +19,15 @@ import android.widget.Toast;
 
 import com.cs656chatapp.common.UserObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
 
 public class MainActivity extends Activity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -48,7 +55,7 @@ public class MainActivity extends Activity implements
     static public ArrayList<String> sent = new ArrayList<String>();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if (buddies.size() > 0) buddies.clear();
@@ -107,9 +114,11 @@ public class MainActivity extends Activity implements
                     String encodedImage = intent.getStringExtra(serverListener.serverEncodedImage);
                     String from = operation.split(":")[1];
                     interceptPic(from, encodedImage);
-                } else if (operation.contains("Receive Voice")) {
+                } else if (operation.contains("Receive Voice:")) {
+                    String encodedVoice = intent.getStringExtra(serverListener.serverEncodedVoice);
                     String from = operation.split(":")[1];
-                    interceptVoice(from, message);
+                    try{interceptVoice(from,encodedVoice);}
+                    catch(Exception e){ e.printStackTrace();}
                 } else if (operation.equals("Friend Logged On")) {
                     addFriendToList(message);
                 } else if (operation.equals("Friend Logged Off")) {
@@ -259,14 +268,14 @@ public class MainActivity extends Activity implements
         }
     }
 
-    protected void interceptVoice(String from,String encodedVoice) {
+    protected void interceptVoice(String from, String encodedVoice) throws IOException, DataFormatException{
         //Update conversation between you and friend here with new voice
-        System.out.printf("Incoming picture from %s\n%s\n", from, encodedVoice);
+        System.out.println("Incoming voice from "+ from + " this is it: \n" + encodedVoice);
         ChatFragment fragment = (ChatFragment) getFragmentManager().findFragmentById(R.id.frag_container);
         if (fragment.getFriendName().equals(from)) {
-            //byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
-            //Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-           // fragment.printChatPic(false, bitmap);
+            byte[] decodedString = Base64.decode(encodedVoice, Base64.DEFAULT);
+            byte[] furtherDecodedString = decompress(decodedString);
+            fragment.printChatVoice(false, furtherDecodedString);
         } else {
             Toast.makeText(MainActivity.this, "New message from " + from, Toast.LENGTH_LONG).show();
         }
@@ -427,5 +436,21 @@ public class MainActivity extends Activity implements
         }
 
     }*/
+
+    public static byte[] decompress(byte[] data) throws IOException, DataFormatException {
+        Inflater inflater = new Inflater();
+        inflater.setInput(data);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
+        byte[] buffer = new byte[1024];
+        while (!inflater.finished()) {
+            int count = inflater.inflate(buffer);
+            outputStream.write(buffer, 0, count);
+        }
+        outputStream.close();
+        byte[] output = outputStream.toByteArray();
+        System.out.println("Original: " + data.length);
+        System.out.println("Compressed: " + output.length);
+        return output;
+    }
 
 }

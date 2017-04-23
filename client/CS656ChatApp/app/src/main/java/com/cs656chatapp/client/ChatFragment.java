@@ -3,40 +3,55 @@ package com.cs656chatapp.client;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ImageSpan;
 import android.util.Base64;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cs656chatapp.common.UserObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 /**
  * Created by Jeremy on 4/13/2017.
@@ -47,6 +62,7 @@ public class ChatFragment extends Fragment {
 
     View rootView;
     Context context;
+    private TextView textView;
     private ChatArrayAdapter chatArrayAdapter;
     private ListView listView;
     private ImageView attachIcon;
@@ -59,6 +75,11 @@ public class ChatFragment extends Fragment {
     private String imageName = null, voiceName=null;
     private static Uri fileUri = null;
     private Bitmap imageBitmap;
+    private MediaPlayer mPlayer = null;
+    private FileDescriptor mFileName=null;
+
+    public String[] mySounds;
+    public FileDescriptor[] yourSounds;
 
     // Storage Permissions
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -91,10 +112,10 @@ public class ChatFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         context = getActivity().getApplicationContext();
         verifyStoragePermissions(getActivity());
         rootView = inflater.inflate(R.layout.fragment_chat, container, false);
-
         listView = (ListView) rootView.findViewById(R.id.msgview);
 
         friendsName = getArguments().getString("friendName");
@@ -102,6 +123,9 @@ public class ChatFragment extends Fragment {
         user.setOperation("Retrieve Messages");
         user.setMessage(friendsName);
         serverConnection.sendToServer(user);
+
+        textView  = (TextView) rootView.findViewById(R.id.friend_name);
+        textView.setText(friendsName);
         chatArrayAdapter = new ChatArrayAdapter(context, R.layout.right);
         chatArrayAdapter.setFriendName(friendsName);
         listView.setAdapter(chatArrayAdapter);
@@ -151,8 +175,12 @@ public class ChatFragment extends Fragment {
                             startActivityForResult(photoPickerIntent, 1);
                         } else if (which == 2) {
 
-                            ChatRecorder chatRecorder = new ChatRecorder();
-                            getFragmentManager().beginTransaction().add(R.id.frag_container,chatRecorder).addToBackStack("chatRec").commit();
+
+                            //AudioRecordFragment aRecordFragment = new AudioRecordFragment();
+                            //getFragmentManager().beginTransaction().add(R.id.frag_container,aRecordFragment).addToBackStack("Recording").commit();
+
+                           // ChatRecorder chatRecorder = new ChatRecorder();
+                            //getFragmentManager().beginTransaction().add(R.id.frag_container,chatRecorder).addToBackStack("chatRec").commit();
 
                             /*
                             root = Environment.getExternalStorageDirectory().toString()
@@ -170,11 +198,10 @@ public class ChatFragment extends Fragment {
                             File voice = new File(voiceFolderPath, voiceName);
 
                             fileUri = Uri.fromFile(voice);
-
-                            Intent voiceRecorderIntent = new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION);
-                            voiceRecorderIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-                            startActivityForResult(voiceRecorderIntent, 2);
                             */
+                           Intent voiceRecorderIntent = new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION);
+                            startActivityForResult(voiceRecorderIntent, 2);
+
                         }
                     }
                 });
@@ -240,6 +267,24 @@ public class ChatFragment extends Fragment {
         chatArrayAdapter.add(new ChatPicture(left, ssb));
     }
 
+    protected void printChatVoice(boolean left, byte[] content) throws IOException, DataFormatException{
+        SpannableStringBuilder builder = new SpannableStringBuilder();
+        builder.append(" ");
+        builder.setSpan(new ImageSpan(getActivity(),R.drawable.play_img),builder.length()-1,
+                builder.length(),0);
+        builder.append(" PLAY");
+        //convert byte to uri
+
+        File tempMp3 = File.createTempFile("sampelina", "mp3", getActivity().getCacheDir());
+        tempMp3.deleteOnExit();
+        FileOutputStream fos = new FileOutputStream(tempMp3);
+        fos.write(content);
+        fos.close();
+        FileInputStream fis = new FileInputStream(tempMp3);
+        mFileName = fis.getFD();
+        chatArrayAdapter.add(new ChatVoice(left,builder,fis.getFD()));
+    }
+
     protected void forPictures(){
         printChatPic(true, imageBitmap);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -254,6 +299,42 @@ public class ChatFragment extends Fragment {
         user.setEncodedImage(encodedImage);
         serverConnection.sendToServer(user);
 
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                final Object itemValue = listView.getItemAtPosition(position+1);
+
+                if(itemValue instanceof ChatMessage){
+                    System.out.println("It's a ChatMessage");
+                    ChatMessage cm = (ChatMessage)itemValue;
+                    if((cm.message).contains("voice")) {
+                        System.out.println("It's definitely a ChatVoice");
+                        startPlaying();
+                    }
+                }
+                if(itemValue instanceof ChatPicture) System.out.println("It's a ChatPicture");
+                if(itemValue instanceof ChatVoice) System.out.println("It's a ChatVoice");
+
+
+
+//                if(itemValue.message.contains("sharepic")){
+//                    Toast.makeText(getActivity().getApplicationContext(),
+//                            "Position: " + position + " Value: It's a picture!", Toast.LENGTH_SHORT).show();
+//                }else if(itemValue.message.contains("sharevoice")){
+//                    Toast.makeText(getActivity().getApplicationContext(),
+//                            "Position: " + position + " Value: It's a voice!", Toast.LENGTH_SHORT).show();
+//                }else{
+//                    Toast.makeText(getActivity().getApplicationContext(),
+//                            "Position: " + position + " Value: "+itemValue.message, Toast.LENGTH_SHORT).show();
+//                }
+            }
+        });
     }
 
     @Override
@@ -279,7 +360,56 @@ public class ChatFragment extends Fragment {
                     imageBitmap = getImageThumbnail.getThumbnail(pickedImage, context);
                     forPictures();
                 } else if (requestCode == 2){
+
                     Uri soundRecorded = data.getData();
+                    String myPath = getPath(soundRecorded);
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    FileInputStream fis;
+                    System.out.println("This is the sound path: "+myPath);
+                    try{
+                        fis = new FileInputStream(new File(myPath));
+                        byte[] buf = new byte[1024];
+                        int n;
+                        while(-1 != (n = fis.read(buf)))
+                            baos.write(buf,0,n);
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
+                    byte[] bbytes = baos.toByteArray();
+                    System.out.println("Length: "+bbytes.length);
+                    System.out.println("Converted to array: ");
+                    for(int i=0;i<bbytes.length;i++){
+                        System.out.print(bbytes[i]);
+                    }
+                    System.out.println("Done");
+
+                    printChatVoice(true, bbytes);
+
+                    byte[] b = compress(bbytes);
+                    String encodedVoice = Base64.encodeToString(b,Base64.DEFAULT);
+
+                    UserObject user = new UserObject();
+                    user.setOperation("Send Voice:" + friendsName);
+                    user.setMessage("Voice");
+                    user.setEncodedVoice(encodedVoice);
+                    serverConnection.sendToServer(user);
+
+
+                    /*
+                    try{
+                        InputStream inputStream = context.getContentResolver().openInputStream(Uri.fromFile(new File(myPath)));
+                        content = new byte[inputStream.available()];
+                        content = toByteArray(inputStream);
+
+                        System.out.println("Converted to array: ");
+                        for(int i=0;i<content.length;i++){
+                            System.out.print(content[i]);
+                        }
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
+                    */
+
                 }
 
               /*  printChatPic(true, imageBitmap);
@@ -300,4 +430,82 @@ public class ChatFragment extends Fragment {
             }
         }
     }
+
+
+    public String getPath(Uri uri) {
+        String[] projection = { MediaStore.Images.Media.DATA };
+        Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        return cursor.getString(column_index);
+    }
+
+    public byte[] toByteArray(InputStream in) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        int read = 0;
+        byte[] buffer = new byte[1024];
+        while (read != -1) {
+            read = in.read(buffer);
+            if (read != -1)
+                out.write(buffer,0,read);
+        }
+        out.close();
+        return out.toByteArray();
+    }
+    private void startPlaying() {
+        mPlayer = new MediaPlayer();
+        try {
+            mPlayer.setDataSource(mFileName);
+            mPlayer.prepare();
+            mPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        if (mPlayer != null) {
+            mPlayer.reset();
+            mPlayer.release();
+            mPlayer = null;
+        }
+    }
+
+    public static byte[] compress(byte[] data) throws IOException {
+        Deflater deflater = new Deflater();
+        deflater.setLevel(Deflater.BEST_COMPRESSION);
+        deflater.setInput(data);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
+        deflater.finish();
+        byte[] buffer = new byte[1024];
+        while (!deflater.finished()) {
+            int count = deflater.deflate(buffer); // returns the generated code... index
+            outputStream.write(buffer, 0, count);
+        }
+        outputStream.close();
+        byte[] output = outputStream.toByteArray();
+        System.out.println("Original: " + data.length);
+        System.out.println("Compressed: " + output.length);
+        return output;
+    }
+
+    public static byte[] decompress(byte[] data) throws IOException, DataFormatException {
+        Inflater inflater = new Inflater();
+        inflater.setInput(data);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
+        byte[] buffer = new byte[1024];
+        while (!inflater.finished()) {
+            int count = inflater.inflate(buffer);
+            outputStream.write(buffer, 0, count);
+        }
+        outputStream.close();
+        byte[] output = outputStream.toByteArray();
+        System.out.println("Original: " + data.length);
+        System.out.println("Compressed: " + output.length);
+        return output;
+    }
+
 }

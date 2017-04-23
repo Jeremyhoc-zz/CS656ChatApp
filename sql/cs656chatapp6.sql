@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS `Messages` (
   `message_type` VARCHAR(45) NOT NULL,
   `content` varchar(100) NULL,
   `picture` MEDIUMTEXT CHARACTER SET ascii NULL,
+  `voice` MEDIUMTEXT CHARACTER SET ascii NULL,
   `sent_dt` timestamp DEFAULT CURRENT_TIMESTAMP,
 
   PRIMARY KEY (`mes_id`),

@@ -157,6 +157,7 @@ public class ChatRecorder extends Fragment {
 
     private void stopRecording() {
         mRecorder.stop();
+        mRecorder.reset();
         mRecorder.release();
         mRecorder = null;
     }
@@ -177,11 +178,13 @@ public class ChatRecorder extends Fragment {
     public void onStop() {
         super.onStop();
         if (mRecorder != null) {
+            mRecorder.reset();
             mRecorder.release();
             mRecorder = null;
         }
 
         if (mPlayer != null) {
+            mPlayer.reset();
             mPlayer.release();
             mPlayer = null;
         }

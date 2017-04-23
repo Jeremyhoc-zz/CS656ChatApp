@@ -130,9 +130,12 @@ class ThreadClientHandler extends Thread {
 						String friendName = operation.split(":")[1];
 						sendPic(userIn, friendName, picFile);
 					} 
-					else if (operation.equals("Send Voice")) {
+					else if (operation.contains("Send Voice")) {
+						String voiceFile = userIn.getEncodedVoice();
+						System.out.println("appServ fileSize: "+ voiceFile.length());
 						String friendName = operation.split(":")[1];
-						sendVoice(userIn, friendName, message);
+						sendVoice(userIn, friendName, voiceFile);
+						sendToClient=false;
 					} 
 					else if (operation.equals("Friend Request")) {
 						userOut = friendRequestHandler(userOut/*, operation, message, username*/);
@@ -192,8 +195,10 @@ class ThreadClientHandler extends Thread {
 		if (rs.next()) friendID = rs.getInt("user_id");
 		String retrieveChatHistorySQL = "select from_uid, to_uid, message_type, content, picture, sent_dt "
 				+ "from messages "
-				+ "where (from_uid = " + user.getUserID() + " or from_uid = " + friendID + ") "
-				+ "and to_uid = " + user.getUserID() + " or to_uid = " + friendID + " "
+				+ "where (from_uid = " + user.getUserID() + " and to_uid = " + friendID + ") "
+				+ "or from_uid = " + friendID + " and to_uid = " + user.getUserID() + " "
+				//+ "where (from_uid = " + user.getUserID() + " or from_uid = " + friendID + ") "
+				//+ "and to_uid = " + user.getUserID() + " or to_uid = " + friendID + " "
 				+ "order by sent_dt ASC limit 31;";
 		rs = dbconn.executeSQL(retrieveChatHistorySQL);
 		String msg = "";
@@ -394,8 +399,20 @@ class ThreadClientHandler extends Thread {
         return user;
 	}	
 
-	private void sendVoice(UserObject userIn2, String friendName, String message) {
-		// TODO Auto-generated method stub
+	private void sendVoice(UserObject user, String to, String voiceFile) throws ClassNotFoundException, IOException, SQLException {
+		
+		String from = user.getUsername();
+		//Send message out to the friend
+	  	if(streams.containsKey(to)) {
+	        UserObject sendMsg = new UserObject();
+	        sendMsg.setOperation("Receive Voice:" + from);
+	        sendMsg.setMessage("Voice");
+	        sendMsg.setEncodedVoice(voiceFile);
+	        sendMsg.setStatus(1);
+	        ObjectOutputStream sendTo = streams.get(to);
+	        sendTo.writeUnshared(sendMsg);
+	        sendTo.flush();
+	  	}        
 	}
 	
 	public UserObject getSentRequests(UserObject user) throws /*ClassNotFoundException, IOException, */SQLException{

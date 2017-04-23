@@ -6,6 +6,15 @@
     android:background="@color/GhostWhite"
     android:orientation="vertical"
     tools:context="com.cs656chatapp.client.ChatFragment">
+    <TextView
+        android:id="@+id/friend_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:background="@color/LimeGreen"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:text="My Friend"/>
 
     <ListView
         android:id="@+id/msgview"

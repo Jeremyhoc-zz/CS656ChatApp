@@ -22,6 +22,22 @@ public class UserObject implements Serializable {
     String message;
     String encodedImage;
     String[] encodedImages;
+    String encodedVoice;
+    String[] encodedVoices;
+
+    public String getEncodedVoice() {
+        return encodedVoice;
+    }
+
+    public void setEncodedVoice(String encodedVoice) {
+        this.encodedVoice = encodedVoice;
+    }
+
+    public String[] getEncodedVoices() { return encodedVoices; }
+
+    public void setEncodedVoices(String[] encodedVoices) {
+        this.encodedVoices = encodedVoices;
+    }
 
     public String[] getEncodedImages() {
         return encodedImages;

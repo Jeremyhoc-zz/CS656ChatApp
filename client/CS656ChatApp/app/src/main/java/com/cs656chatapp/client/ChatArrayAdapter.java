@@ -1,6 +1,7 @@
 package com.cs656chatapp.client;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,9 +20,10 @@ class ChatArrayAdapter extends ArrayAdapter {
     private TextView chatText;
     private List<ChatMessage> chatMessageList = new ArrayList<ChatMessage>();
     private List<ChatPicture> chatPictureList = new ArrayList<ChatPicture>();
+    private List<ChatVoice> chatVoiceList = new ArrayList<ChatVoice>();
     private Context context;
     private String friendName;
-    private int i = 0;
+    private int i = 0,j = 0;
 
     public void add(ChatMessage object) {
         chatMessageList.add(object);
@@ -32,6 +34,13 @@ class ChatArrayAdapter extends ArrayAdapter {
         //System.out.printf("sharpic%s", i);
         add(new ChatMessage(object.left, ("sharepic" + i++)));
         chatPictureList.add(object);
+        super.add(object);
+    }
+
+    public void add(ChatVoice object) {
+        //System.out.printf("sharpic%s", i);
+        add(new ChatMessage(object.left, ("sharevoice" + j++)));
+        chatVoiceList.add(object);
         super.add(object);
     }
 
@@ -60,6 +69,11 @@ class ChatArrayAdapter extends ArrayAdapter {
         return this.chatPictureList.get(index);
     }
 
+    public ChatVoice getVoiceItem(int index) {
+        return this.chatVoiceList.get(index);
+    }
+
+
     public View getView(int position, View convertView, ViewGroup parent) {
         ChatMessage chatMessageObj = getMessageItem(position);
         View row = convertView;
@@ -76,8 +90,17 @@ class ChatArrayAdapter extends ArrayAdapter {
             System.out.printf("After: %s", position);
             ChatPicture chatPictureObj = getPictureItem(position);
             chatText.setText(chatPictureObj.picture);
-        } else {
+            chatText.setTypeface(null, Typeface.NORMAL);
+        } else if(chatMessageObj.message.contains("sharevoice")){
+            System.out.printf("Before: %s", position);
+            position = Integer.parseInt(chatMessageObj.message.replace("sharevoice", ""));
+            System.out.printf("After: %s", position);
+            ChatVoice chatVoiceObj = getVoiceItem(position);
+            chatText.setText(chatVoiceObj.builder);
+            chatText.setTypeface(null, Typeface.BOLD);
+        } else{
             chatText.setText(chatMessageObj.message);
+            chatText.setTypeface(null, Typeface.NORMAL);
         }
 
         return row;

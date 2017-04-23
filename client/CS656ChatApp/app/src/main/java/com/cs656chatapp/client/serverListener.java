@@ -97,6 +97,8 @@ public class serverListener extends Service {
     final static public String serverMessage = "com.cs656chatapp.client.serverListener.serverMessage";
     final static public String serverEncodedImage = "com.cs656chatapp.client.serverListener.serverEncodedImage";
     final static public String serverEncodedImages = "com.cs656chatapp.client.serverListener.serverEncodedImages";
+    final static public String serverEncodedVoice = "com.cs656chatapp.client.serverListener.serverEncodedVoice";
+    final static public String serverEncodedVoices = "com.cs656chatapp.client.serverListener.serverEncodedVoices";
 
     public void sendResult(String operation, String message, UserObject user) {
         Intent intent = new Intent(serverResult);
@@ -108,6 +110,10 @@ public class serverListener extends Service {
         } else if (operation.contains("Receive Pic:")) {
             String encodedImage = user.getEncodedImage();
             intent.putExtra(serverEncodedImage, encodedImage);
+        } else if(operation.contains("Receive Voice:")){
+            String encodedVoice = user.getEncodedVoice();
+            System.out.println("From listener:\n"+encodedVoice);
+            intent.putExtra(serverEncodedVoice, encodedVoice);
         }
         broadcaster.sendBroadcast(intent);
     }
