@@ -3,7 +3,6 @@ package com.cs656chatapp.client;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,7 +23,6 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ImageSpan;
 import android.util.Base64;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,7 +46,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
@@ -77,9 +74,8 @@ public class ChatFragment extends Fragment {
     private Bitmap imageBitmap;
     private MediaPlayer mPlayer = null;
     private FileDescriptor mFileName=null;
+    File tempMp3;
 
-    public String[] mySounds;
-    public FileDescriptor[] yourSounds;
 
     // Storage Permissions
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -174,34 +170,8 @@ public class ChatFragment extends Fragment {
                             photoPickerIntent.setType("image/*");
                             startActivityForResult(photoPickerIntent, 1);
                         } else if (which == 2) {
-
-
-                            //AudioRecordFragment aRecordFragment = new AudioRecordFragment();
-                            //getFragmentManager().beginTransaction().add(R.id.frag_container,aRecordFragment).addToBackStack("Recording").commit();
-
-                           // ChatRecorder chatRecorder = new ChatRecorder();
-                            //getFragmentManager().beginTransaction().add(R.id.frag_container,chatRecorder).addToBackStack("chatRec").commit();
-
-                            /*
-                            root = Environment.getExternalStorageDirectory().toString()
-                                    + "/cs656chatapp";
-
-                            // Creating folders for Image
-                            voiceFolderPath = root + "/saved_voice";
-                            File voiceFolder = new File(voiceFolderPath);
-                            voiceFolder.mkdirs();
-
-                            // Generating file name
-                            voiceName = "to" + friendsName + ".mp3";
-
-                            // Creating image here
-                            File voice = new File(voiceFolderPath, voiceName);
-
-                            fileUri = Uri.fromFile(voice);
-                            */
                            Intent voiceRecorderIntent = new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION);
                             startActivityForResult(voiceRecorderIntent, 2);
-
                         }
                     }
                 });
@@ -275,7 +245,7 @@ public class ChatFragment extends Fragment {
         builder.append(" PLAY");
         //convert byte to uri
 
-        File tempMp3 = File.createTempFile("sampelina", "mp3", getActivity().getCacheDir());
+        tempMp3 = File.createTempFile("sampelina", "mp3", getActivity().getCacheDir());
         tempMp3.deleteOnExit();
         FileOutputStream fos = new FileOutputStream(tempMp3);
         fos.write(content);
@@ -313,26 +283,17 @@ public class ChatFragment extends Fragment {
                 if(itemValue instanceof ChatMessage){
                     System.out.println("It's a ChatMessage");
                     ChatMessage cm = (ChatMessage)itemValue;
-                    if((cm.message).contains("voice")) {
-                        System.out.println("It's definitely a ChatVoice");
-                        startPlaying();
-                    }
+                    startPlaying();
+                    if((cm.message).contains("voice")) System.out.println("It's definitely a ChatVoice");
+
+
                 }
                 if(itemValue instanceof ChatPicture) System.out.println("It's a ChatPicture");
-                if(itemValue instanceof ChatVoice) System.out.println("It's a ChatVoice");
+                if(itemValue instanceof ChatVoice){
+                    System.out.println("It's a ChatVoice");
+                    startPlaying();
+                }
 
-
-
-//                if(itemValue.message.contains("sharepic")){
-//                    Toast.makeText(getActivity().getApplicationContext(),
-//                            "Position: " + position + " Value: It's a picture!", Toast.LENGTH_SHORT).show();
-//                }else if(itemValue.message.contains("sharevoice")){
-//                    Toast.makeText(getActivity().getApplicationContext(),
-//                            "Position: " + position + " Value: It's a voice!", Toast.LENGTH_SHORT).show();
-//                }else{
-//                    Toast.makeText(getActivity().getApplicationContext(),
-//                            "Position: " + position + " Value: "+itemValue.message, Toast.LENGTH_SHORT).show();
-//                }
             }
         });
     }
@@ -394,37 +355,7 @@ public class ChatFragment extends Fragment {
                     user.setEncodedVoice(encodedVoice);
                     serverConnection.sendToServer(user);
 
-
-                    /*
-                    try{
-                        InputStream inputStream = context.getContentResolver().openInputStream(Uri.fromFile(new File(myPath)));
-                        content = new byte[inputStream.available()];
-                        content = toByteArray(inputStream);
-
-                        System.out.println("Converted to array: ");
-                        for(int i=0;i<content.length;i++){
-                            System.out.print(content[i]);
-                        }
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                    */
-
                 }
-
-              /*  printChatPic(true, imageBitmap);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                imageBitmap.compress(Bitmap.CompressFormat.PNG, 0, baos);
-                byte[] imageBytes = baos.toByteArray();
-                String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-                System.out.printf("encodedImage size: %s\n", encodedImage.length());
-
-                UserObject user = new UserObject();
-                user.setOperation("Send Pic:" + friendsName);
-                user.setMessage("Picture");
-                user.setEncodedImage(encodedImage);
-                serverConnection.sendToServer(user);
-                */
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -440,18 +371,6 @@ public class ChatFragment extends Fragment {
         return cursor.getString(column_index);
     }
 
-    public byte[] toByteArray(InputStream in) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int read = 0;
-        byte[] buffer = new byte[1024];
-        while (read != -1) {
-            read = in.read(buffer);
-            if (read != -1)
-                out.write(buffer,0,read);
-        }
-        out.close();
-        return out.toByteArray();
-    }
     private void startPlaying() {
         mPlayer = new MediaPlayer();
         try {

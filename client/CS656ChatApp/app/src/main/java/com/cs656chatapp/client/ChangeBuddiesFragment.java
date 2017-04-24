@@ -39,19 +39,14 @@ public class ChangeBuddiesFragment extends Fragment {
     Button friendButton,findButton,requestsButton,sentButton;
     UserObject user;
     String buddy_list, requests_list,sent_list;
-    String friends[];
     EditText FindUsername;
-    String findUsername = "", findUsernameOld, recipients;
-    Intent i;
+    String findUsername = "";
     AlertDialog.Builder builder;
     CharSequence choices[] = new CharSequence[]{"Delete","Keep"};
     CharSequence choices1[] = new CharSequence[]{"Accept","Reject"};
     Intent intent;
     Context context;
     View rootView;
-    ArrayAdapter<String> adapter,adapter1;
-
-    //public ArrayList<String> buddies = MainActivity.buddies;
 
     private BroadcastReceiver receiver;
 
@@ -101,13 +96,7 @@ public class ChangeBuddiesFragment extends Fragment {
                     loadFriendsList();
                 }else if(operation.equals("Remove from Request List")){
                     loadRequestList();
-                }/*else if (operation.equals("Sent Request Deleted")) {
-                    Toast.makeText(getActivity().getApplicationContext(),"Request Deleted",Toast.LENGTH_SHORT).show();
-                    getSentRequests();
-                }else if (operation.equals("Take Buddy List")) {
-                    Toast.makeText(getActivity().getApplicationContext(),"Deleted Successfully",Toast.LENGTH_SHORT).show();
-                    buddy_list=user.getMessage();
-                }*/
+                }
             }
         };
 
@@ -182,11 +171,6 @@ public class ChangeBuddiesFragment extends Fragment {
         super.onStop();
     }
 
-    protected void deleteFriend(String recipientDel) {
-        user.setMessage(recipientDel);
-        user.setOperation("Delete Friend");
-        user = serverConnection.sendToServer(user);
-    }
 
 
     protected void loadRequestList(){

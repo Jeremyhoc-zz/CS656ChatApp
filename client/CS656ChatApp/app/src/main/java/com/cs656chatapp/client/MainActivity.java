@@ -184,32 +184,6 @@ public class MainActivity extends Activity implements
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
         super.onStop();
     }
-/*
-    @Override
-    public void keepUp(ArrayList<String> b,ArrayList<String> r,ArrayList<String> s){
-        buddies = b;
-        requests = r;
-        sent = s;
-    }*/
-
-    /*   //Code to make a listview item bold
-
-    @Override
-
-    public View adapter.getView(int position, View convertView, ViewGroup parent){
-       // View returnedView = super.getView;
-        View returnedView = super.getView(position, convertView, parent);
-
-        TextView text = (TextView)returnedView.findViewById(R.id.text);
-        text.setTypeface(null, Typeface.BOLD);
-    }
-    */
-
-    //UNUSED
-    protected void getRequests() {
-        user.setOperation("Get Request List");
-        user = serverConnection.sendToServer(user);
-    }
 
     protected void chatHistory(String friendName, String message, String[] encodedImages) {
         if (message != null) {
@@ -298,16 +272,6 @@ public class MainActivity extends Activity implements
             Toast.makeText(MainActivity.this, mes[0] + " has rejected your Friend Request.", Toast.LENGTH_LONG).show();
 
         }
-//        String[] msgSplit = friend.split(",");
-//        String possiblyMyFriendName = msgSplit[0]; //Who is responding
-//        String acceptedOrRejected = msgSplit[1]; //Was it accepted or rejected?
-//        if (acceptedOrRejected.equals("accepted")) {
-//            addFriendToList(possiblyMyFriendName);
-//            //Remove friend request with a positive or make it green.sele
-//        } else if (acceptedOrRejected.equals("rejected")) {
-//            //Remove friend request with a negative or make it red.
-//        }
-        //Create an area where we can view whether friendship requests have been accepted or rejected.
     }
 
     protected void addFriendToList(String friend) {
@@ -335,15 +299,6 @@ public class MainActivity extends Activity implements
             changeBuddiesFragment.setArguments(bundle);
             getFragmentManager().beginTransaction().replace(R.id.frag_container, changeBuddiesFragment).addToBackStack("requestFrag").commit();
         }
-        if (position == 2) {
-            ProfileFragment firstFragment = new ProfileFragment();
-            getFragmentManager().beginTransaction().replace(R.id.frag_container, firstFragment).addToBackStack("profileFrag").commit();
-        }
-/*        if (position == 3) {
-            ChangeBuddiesFragment changeBuddiesFragment = new ChangeBuddiesFragment();
-            changeBuddiesFragment.setArguments(bundle);
-            getFragmentManager().beginTransaction().replace(R.id.frag_container, changeBuddiesFragment).addToBackStack("changeBuddiesFrag").commit();
-        }*/
     }
 
     public void onSectionAttached(int number) {

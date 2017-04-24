@@ -55,7 +55,6 @@ public class NewUserActivity extends AppCompatActivity {
                 }
                 if (!username.equals("") && !password.equals("") && !name.equals("") && !confirm_password.equals("") && passwordSwitch) {
                     System.out.println("Sending this to server!");
-                    //new Thread(send).start();
                     runThread();
                 }
 
@@ -91,13 +90,6 @@ public class NewUserActivity extends AppCompatActivity {
                     // user.setStatus(0);
                     //startActivity
                     Log.d("Jet", "Status= " + user.getStatus());
-                /*
-                Context context = getApplicationContext();
-                int duration = Toast.LENGTH_SHORT;
-                CharSequence text= "New User Successfully created!";
-                Toast toast = Toast.makeText(context, text, duration);
-                toast.show();
-                */
                     Intent intent = new Intent();
                     intent.setClass(NewUserActivity.this, MainActivity.class);
                     user.setMessage("New User");

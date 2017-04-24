@@ -75,9 +75,6 @@ public class BuddyListFragment extends ListFragment {
         System.out.println("BUDDY LIST Requests received: " + requests_list);
         if (!requests.isEmpty())
             Toast.makeText(getActivity(), "You have requests!", Toast.LENGTH_LONG).show();
-/*      if(!(buddy_list == null)) {
-          buddies = buddy_list.split(",");
-      }*/
 
         return rootView;
     }
@@ -97,10 +94,6 @@ public class BuddyListFragment extends ListFragment {
         super.onStop();
     }
 
-/*    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);*/
-
     public void loadBuddyList() {
         ListAdapter myListAdapter = new ArrayAdapter<String>(
                 getActivity(),
@@ -116,13 +109,9 @@ public class BuddyListFragment extends ListFragment {
 
                 Bundle bundle = new Bundle();
                 bundle.putString("friendName", (String) buddyListView.getItemAtPosition(position));
-
                 ChatFragment chatFragment = new ChatFragment();
                 chatFragment.setArguments(bundle);
                 getFragmentManager().beginTransaction().replace(R.id.frag_container,chatFragment).addToBackStack("chatFrag").commit();
-/*                Toast.makeText(getActivity().getApplicationContext(),
-                        "Item in position " + position + " is called " + buddyListView.getItemAtPosition(position), Toast.LENGTH_LONG).show();
-                String itemValue = (String) buddyListView.getItemAtPosition(position);*/
             }
         });
 
