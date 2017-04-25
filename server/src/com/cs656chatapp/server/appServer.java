@@ -190,11 +190,11 @@ class ThreadClientHandler extends Thread {
 
 	public UserObject retrieveChatHistory(UserObject user) throws SQLException, IOException {
 		String friendName=user.getMessage();
-		rs = dbconn.executeSQL("select user_id from users where username=\"" + friendName + "\";");
+		rs = dbconn.executeSQL("select user_id from Users where username=\"" + friendName + "\";");
 		int friendID = -1;
 		if (rs.next()) friendID = rs.getInt("user_id");
 		String retrieveChatHistorySQL = "select from_uid, to_uid, message_type, content, picture, sent_dt "
-				+ "from messages "
+				+ "from Messages "
 				+ "where (from_uid = " + user.getUserID() + " and to_uid = " + friendID + ") "
 				+ "or from_uid = " + friendID + " and to_uid = " + user.getUserID() + " "
 				//+ "where (from_uid = " + user.getUserID() + " or from_uid = " + friendID + ") "
@@ -270,7 +270,7 @@ class ThreadClientHandler extends Thread {
 			if (user.getUsername().equals(rs.getString("username")))
 				return false;
 		}
-		ret=dbconn.executeUpdate("insert into users(username,password,name) values(\""+user.getUsername()+"\",\""+user.getPassword()+"\",\""+user.getName()+"\");");
+		ret=dbconn.executeUpdate("insert into Users(username,password,name) values(\""+user.getUsername()+"\",\""+user.getPassword()+"\",\""+user.getName()+"\");");
 		if(ret) return true;
 		return false;
 	}
@@ -290,7 +290,7 @@ class ThreadClientHandler extends Thread {
 	}
 	
 	public void notifyLoggedIn(UserObject user) throws ClassNotFoundException, IOException, SQLException {
-		rs = dbconn.executeSQL("select username from Users where user_id IN (select friend_id from friends where user_id="+user.getUserID()+");");
+		rs = dbconn.executeSQL("select username from Users where user_id IN (select friend_id from Friends where user_id="+user.getUserID()+");");
 		while(rs.next()) {
 			String friendsName = rs.getString("username");
 		  	if(streams.containsKey(friendsName)){
@@ -306,8 +306,8 @@ class ThreadClientHandler extends Thread {
 	}
 	
 	public UserObject getRequests(UserObject user) throws SQLException{
-		rs = dbconn.executeSQL("select username from users where user_id IN "
-				+ "(select sender_id from friendRequests where receiver_id= " + user.getUserID() + ");");
+		rs = dbconn.executeSQL("select username from Users where user_id IN "
+				+ "(select sender_id from FriendRequests where receiver_id= " + user.getUserID() + ");");
 		String senderNames="";
 		while(rs.next())
 		{
@@ -322,7 +322,7 @@ class ThreadClientHandler extends Thread {
 	
 	public UserObject loadBuddyList(UserObject user) throws ClassNotFoundException, IOException, SQLException {
 		//Grab user ID's friends in DB, return to client for loading
-		rs = dbconn.executeSQL("select user_id, name, username from users where user_id IN (select friend_id from friends where user_id="+user.getUserID()+") OR user_id IN (select user_id from friends where friend_id="+user.getUserID()+");");
+		rs = dbconn.executeSQL("select user_id, name, username from Users where user_id IN (select friend_id from Friends where user_id="+user.getUserID()+") OR user_id IN (select user_id from Friends where friend_id="+user.getUserID()+");");
 		String friends="";
 		while(rs.next())
 		{
@@ -345,12 +345,12 @@ class ThreadClientHandler extends Thread {
 		//Add pic to DB, Grab OutputStream of friend's username in variable streams, and send to that receiver.
 	  		String from = user.getUsername();
 			int fromID = user.getUserID();
-			rs = dbconn.executeSQL("select user_ID from users where username=\"" + to + "\";");
+			rs = dbconn.executeSQL("select user_ID from Users where username=\"" + to + "\";");
 			int toID = -1;
 			if (rs.next()) toID = rs.getInt("user_id");
 
-			//Add new entry in messages table
-			boolean ret=dbconn.executeUpdate("insert into messages (from_uid, to_uid, message_type, content) values ("+fromID+","+toID+","+"\"text\",\""+message+"\");");
+			//Add new entry in Messages table
+			boolean ret=dbconn.executeUpdate("insert into Messages (from_uid, to_uid, message_type, content) values ("+fromID+","+toID+","+"\"text\",\""+message+"\");");
 			if(!ret) System.out.println("Something wrong adding message to db");
 			else System.out.println("Message added to DB successfully.");
 			
@@ -373,12 +373,12 @@ class ThreadClientHandler extends Thread {
 		//Add message to DB, Grab OutputStream of friend's username in variable streams, and send to that receiver.
 	  		String from = user.getUsername();
 			int fromID = user.getUserID();
-			rs = dbconn.executeSQL("select user_ID from users where username=\"" + to + "\";");
+			rs = dbconn.executeSQL("select user_ID from Users where username=\"" + to + "\";");
 			int toID = -1;
 			if (rs.next()) toID = rs.getInt("user_id");
 			//System.out.printf("sendPic picFile contents: %s", picFile);
-			//Add new entry in messages table
-			boolean ret=dbconn.executeUpdate("insert into messages (from_uid, to_uid, message_type, picture) values ("+fromID+","+toID+",'pic','"+picFile+"');");
+			//Add new entry in Messages table
+			boolean ret=dbconn.executeUpdate("insert into Messages (from_uid, to_uid, message_type, picture) values ("+fromID+","+toID+",'pic','"+picFile+"');");
 			if(!ret) System.out.println("Something wrong adding picture to db");
 			else System.out.println("Picture added to DB successfully.");
 			
@@ -416,8 +416,8 @@ class ThreadClientHandler extends Thread {
 	}
 	
 	public UserObject getSentRequests(UserObject user) throws /*ClassNotFoundException, IOException, */SQLException{
-		rs = dbconn.executeSQL("select username from users where user_id IN "
-				+ "(select receiver_id from friendRequests where sender_id="+user.getUserID()+");");
+		rs = dbconn.executeSQL("select username from Users where user_id IN "
+				+ "(select receiver_id from FriendRequests where sender_id="+user.getUserID()+");");
 		String receiverNames="";
 		while(rs.next())
 		{
@@ -433,10 +433,10 @@ class ThreadClientHandler extends Thread {
 
 	public boolean verifyStrangerExists(String strangerName, int clientID) throws SQLException {
 		// Check if username exists
-		rs = dbconn.executeSQL("select username,user_id from users where username=\"" + strangerName + "\";");
+		rs = dbconn.executeSQL("select username,user_id from Users where username=\"" + strangerName + "\";");
 		if (rs.next()) {
 			int friendID = rs.getInt("user_id");
-			dbconn.executeUpdate("insert into friendRequests values(" + clientID + "," + friendID + ");");
+			dbconn.executeUpdate("insert into FriendRequests values(" + clientID + "," + friendID + ");");
 			return true;
 		} else {
 			return false;
@@ -469,13 +469,13 @@ class ThreadClientHandler extends Thread {
 			}
 		} else if (operation.equals("Respond to Friend Request")) {
 			String result = msgSplit[2];
-			rs = dbconn.executeSQL("select user_id from users where username=\""+ strangerName +"\";");
+			rs = dbconn.executeSQL("select user_id from Users where username=\""+ strangerName +"\";");
 			int person2ID = -1;
 			if (rs.next()) person2ID = rs.getInt("user_id");
 			if (result.equals("Accept")) {
-				dbconn.executeUpdate("insert into friends values(" + clientID + ", " + person2ID + ");");
+				dbconn.executeUpdate("insert into Friends values(" + clientID + ", " + person2ID + ");");
 			}				
-			dbconn.executeUpdate("delete from friendRequests where receiver_id = " + clientID + " AND sender_id  =" + person2ID + ";");
+			dbconn.executeUpdate("delete from FriendRequests where receiver_id = " + clientID + " AND sender_id  =" + person2ID + ";");
 			user.setOperation("Response received");
 			user.setMessage("Response documented for "+strangerName);
 			if(streams.containsKey(strangerName)){
@@ -493,13 +493,13 @@ class ThreadClientHandler extends Thread {
 	}
 	
 	public void deleteRequest(UserObject user) throws SQLException, IOException {
-		rs = dbconn.executeSQL("select user_id from users where username=\""+user.getMessage()+"\";");
+		rs = dbconn.executeSQL("select user_id from Users where username=\""+user.getMessage()+"\";");
 		int id=-1;
 		while(rs.next())
 		{
 			id = rs.getInt("user_id");		
 		}
-	    dbconn.executeUpdate("delete from friendRequests where sender_id="+user.getUserID()+" and receiver_id="+id+";");
+	    dbconn.executeUpdate("delete from FriendRequests where sender_id="+user.getUserID()+" and receiver_id="+id+";");
 	    // Update them if online that they're request has been deleted 
 	  	if(streams.containsKey(user.getMessage())){
 	  		ObjectOutputStream toStrangerSocket = streams.get(user.getMessage());
@@ -516,14 +516,14 @@ class ThreadClientHandler extends Thread {
 	public void deleteFriend(UserObject user)  throws ClassNotFoundException, IOException,SQLException {
 		//Disable an old friendship in the database friendshipHistory table
 		//1-Get friend's ID from database
-		rs = dbconn.executeSQL("select user_id from users where username=\""+user.getMessage()+"\";");
+		rs = dbconn.executeSQL("select user_id from Users where username=\""+user.getMessage()+"\";");
 		int friendID=-1;
 		while(rs.next())
 		{
 			friendID= rs.getInt("user_id");	
 		}
 		//2-Delete from friends table
-		dbconn.executeUpdate("delete from friends where user_id="+user.getUserID()+" and friend_id="+friendID+" OR user_id="+friendID
+		dbconn.executeUpdate("delete from Friends where user_id="+user.getUserID()+" and friend_id="+friendID+" OR user_id="+friendID
 				+" and friend_id="+user.getUserID()+";");
 		//3-Inform friend if online
 		if(streams.containsKey(user.getMessage())){
@@ -547,7 +547,7 @@ class ThreadClientHandler extends Thread {
 	}
 	
 	public void notifyLoggedOut(UserObject user, String username) throws IOException, SQLException {
-		rs = dbconn.executeSQL("select username from Users where user_id IN (select friend_id from friends where user_id="+user.getUserID()+");");
+		rs = dbconn.executeSQL("select username from Users where user_id IN (select friend_id from Friends where user_id="+user.getUserID()+");");
 		while(rs.next()) {
 			String friendsName = rs.getString("username");
 			if(streams.containsKey(friendsName)){
