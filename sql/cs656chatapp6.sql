@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS `Friends` (
   `friend_id` INT NOT NULL,
 
   PRIMARY KEY (`user_id`,`friend_id`),
-  FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
-  FOREIGN KEY (`friend_id`) REFERENCES `users` (`user_id`))
+  FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`),
+  FOREIGN KEY (`friend_id`) REFERENCES `Users` (`user_id`))
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -58,8 +58,8 @@ CREATE TABLE IF NOT EXISTS `Messages` (
   `sent_dt` timestamp DEFAULT CURRENT_TIMESTAMP,
 
   PRIMARY KEY (`mes_id`),
-  FOREIGN KEY (`from_uid`) REFERENCES `users` (`user_id`),
-  FOREIGN KEY (`to_uid`) REFERENCES `users` (`user_id`))
+  FOREIGN KEY (`from_uid`) REFERENCES `Users` (`user_id`),
+  FOREIGN KEY (`to_uid`) REFERENCES `Users` (`user_id`))
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -73,8 +73,8 @@ CREATE TABLE IF NOT EXISTS `FriendRequests` (
 
 
   PRIMARY KEY (`sender_id`,`receiver_id`),
-  FOREIGN KEY (`sender_id`) REFERENCES `users` (`user_id`),
-  FOREIGN KEY (`receiver_id`) REFERENCES `users` (`user_id`))
+  FOREIGN KEY (`sender_id`) REFERENCES `Users` (`user_id`),
+  FOREIGN KEY (`receiver_id`) REFERENCES `Users` (`user_id`))
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
