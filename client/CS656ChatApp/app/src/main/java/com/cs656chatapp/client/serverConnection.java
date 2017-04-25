@@ -24,7 +24,7 @@ public class serverConnection {
 
     public static UserObject connect(UserObject user) {
         try {
-            mySocket = new Socket("192.168.56.1", 2597); //98.109.17.60 //10.0.2.2
+            mySocket = new Socket("98.109.17.60", 2597); //10.0.2.2
             OUT = new ObjectOutputStream(mySocket.getOutputStream());
             IN = new ObjectInputStream(mySocket.getInputStream());
             OUT.writeUnshared(user);
