@@ -64,10 +64,10 @@ ENGINE = InnoDB;
 
 SHOW WARNINGS;
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `friendRequests` ;
+DROP TABLE IF EXISTS `FriendRequests` ;
 
 SHOW WARNINGS;
-CREATE TABLE IF NOT EXISTS `friendRequests` (
+CREATE TABLE IF NOT EXISTS `FriendRequests` (
   `sender_id` INT NOT NULL,
   `receiver_id` INT NOT NULL,
 
